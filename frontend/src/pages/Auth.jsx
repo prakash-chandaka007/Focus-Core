@@ -9,15 +9,19 @@ import {
   CheckCircle2,
   Zap
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Required for navigation
+import api from '../services/api'; // Corrected path based on your src structure
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate(); // Initialize navigation
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: ''
+    fullName: '' // This maps to 'username' in the backend
   });
 
   // Trigger entrance animation on mount
@@ -32,14 +36,35 @@ const Auth = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    setTimeout(() => {
+    // CORRECTION: Map 'fullName' to 'username' so authController.js can read it
+    const authData = isLogin 
+      ? { email: formData.email, password: formData.password }
+      : { 
+          username: formData.fullName, 
+          email: formData.email, 
+          password: formData.password 
+        };
+
+    try {
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const res = await api.post(endpoint, authData); // Real API call
+      
+      // Store the JWT for future requests
+      localStorage.setItem('token', res.data.token);
+      
+      console.log("Access Granted. Token Stored.");
+      navigate('/dashboard'); // Redirect to protected dashboard
+    } catch (err) {
+      // Error handling for backend responses
+      const errorMsg = err.response?.data?.msg || "System Access Denied";
+      alert(errorMsg);
+    } finally {
       setLoading(false);
-      console.log("Authenticated as Operator:", formData.email);
-    }, 1500);
+    }
   };
 
   return (
@@ -53,13 +78,13 @@ const Auth = () => {
       </div>
 
       {/* BACK TO LANDING */}
-      <a 
-        href="/" 
-        className={`absolute top-8 left-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition-all duration-700 group z-10 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
+      <button 
+        onClick={() => navigate('/')} 
+        className={`absolute top-8 left-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition-all duration-700 group z-10 bg-transparent border-none cursor-pointer ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
         Return to Neutral
-      </a>
+      </button>
 
       {/* AUTH CARD */}
       <div className={`w-full max-w-md relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
@@ -121,7 +146,7 @@ const Auth = () => {
               <div className="flex justify-between">
                 <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Access Key</label>
                 {isLogin && (
-                  <button type="button" className="text-[8px] font-black uppercase tracking-widest text-indigo-500 hover:text-white transition-colors">
+                  <button type="button" className="text-[8px] font-black uppercase tracking-widest text-indigo-500 hover:text-white transition-colors bg-transparent border-none cursor-pointer">
                     Forgot?
                   </button>
                 )}
@@ -143,7 +168,7 @@ const Auth = () => {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4"
+              className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
             >
               <span className={`flex items-center justify-center gap-3 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
                 {isLogin ? 'Initialize Session' : 'Create Profile'} 
@@ -154,7 +179,6 @@ const Auth = () => {
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                 </div>
               )}
-              {/* Shine effect on hover */}
               <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shine" />
             </button>
           </form>
@@ -164,7 +188,7 @@ const Auth = () => {
               {isLogin ? "New to the system?" : "Already an operator?"}
               <button 
                 onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-indigo-500 hover:text-white transition-colors uppercase italic font-bold"
+                className="ml-2 text-indigo-500 hover:text-white transition-colors uppercase italic font-bold bg-transparent border-none cursor-pointer"
               >
                 {isLogin ? 'Request Access' : 'Authenticate Now'}
               </button>

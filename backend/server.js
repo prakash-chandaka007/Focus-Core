@@ -3,28 +3,50 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+// 1. Load Config early
 dotenv.config();
+
+// 2. Import Routes (Moved up for clarity)
+const authRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
 
-// Middleware
-app.use(express.json()); // Parses incoming JSON requests
-app.use(cors());         // Allows your React frontend to talk to this API
+// 3. Essential Middleware
+app.use(express.json());
+app.use(cors());
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB Connected Successfully"))
-    .catch(err => console.error("Database Connection Error:", err));
+// 4. Database Connection Logic
+// Refactored to handle modern Mongoose connection patterns
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("✅ MongoDB Connected Successfully to Compass");
+    } catch (err) {
+        console.error("❌ Database Connection Error:", err.message);
+        process.exit(1); // Stop the server if DB fails
+    }
+};
+connectDB();
 
-// Basic Route for Testing
-app.get('/', (req, res) => res.send('API is running...'));
+// 5. Routes
+app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }));
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+
+// 6. Global Error Handling Middleware
+// This catches any error thrown in your routes so the server doesn't crash
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+        error: process.env.NODE_ENV === 'development' ? err.message : {}
+    });
+});
 
 const PORT = process.env.PORT || 5000;
-
-// Import Routes
-const authRoutes = require('./routes/authRoutes');
-
-// Use Routes
-app.use('/api/auth', authRoutes);
-
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Server started on port ${PORT}`);
+    console.log(`📡 Health check: http://localhost:${PORT}/health`);
+});
