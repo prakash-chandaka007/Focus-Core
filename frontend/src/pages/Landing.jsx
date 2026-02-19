@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  CheckCircle2,
   Target,
   ListTodo,
   TrendingUp,
@@ -101,7 +100,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center relative border border-white/10 group-hover:rotate-[-10deg] transition-all duration-500 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.5)]">
-              <CheckCircle2 size={20} className="text-white" strokeWidth={3} />
+              <Target size={20} className="text-white" strokeWidth={3} />
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-xl font-black tracking-tighter uppercase italic">FOCUS<span className="text-indigo-500">CORE</span></span>
@@ -130,7 +129,7 @@ const Landing = () => {
                 onClick={() => navigate('/auth')}
                 className="px-7 py-3 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-sm hover:bg-indigo-600 hover:text-white transition-all active:scale-95 shadow-lg border-none cursor-pointer"
               >
-                Join the Waitlist
+                Join now
               </button>
             </div>
           </div>
@@ -177,7 +176,7 @@ const Landing = () => {
               onClick={() => navigate('/auth')}
               className="flex items-center justify-center gap-4 px-12 py-6 bg-transparent border border-white/10 text-xs font-black uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all rounded-sm text-white cursor-pointer"
             >
-              Explore The Method
+              Explore The Model
             </button>
           </div>
         </div>
@@ -209,7 +208,7 @@ const Landing = () => {
                   <div key={i}
                     style={{ transitionDelay: `${i * 100}ms` }}
                     className={`h-12 w-12 border border-white/10 rounded-xl flex items-center justify-center transition-all group-hover:border-indigo-500/40 group-hover:bg-indigo-600/5 group-hover:scale-110`}>
-                    <CheckCircle2 size={18} className="text-gray-800 group-hover:text-indigo-500" />
+                    <Target size={18} className="text-gray-800 group-hover:text-indigo-500" />
                   </div>
                 ))}
               </div>
@@ -324,7 +323,7 @@ const Landing = () => {
                 <div className="w-64 h-64 rounded-full border border-indigo-500/20 animate-spin-slow flex items-center justify-center">
                   <div className="w-48 h-48 rounded-full border border-indigo-500/40 animate-reverse-spin flex items-center justify-center">
                     <div className="w-32 h-32 rounded-full bg-indigo-600/20 backdrop-blur-3xl flex items-center justify-center border border-indigo-500 shadow-[0_0_50px_rgba(79,70,229,0.3)]">
-                      <CheckCircle2 size={40} className="text-white" />
+                      <Target size={40} className="text-white" />
                     </div>
                   </div>
                 </div>
@@ -346,10 +345,10 @@ const Landing = () => {
             className={`text-6xl md:text-[10rem] font-black italic tracking-tighter mb-12 md:mb-16 uppercase leading-[0.8] transition-all duration-1000 ${isVisible('final-title') ? 'opacity-100 scale-100' : 'opacity-0 scale-110 blur-2xl'}`}>
             BECOME <br className="md:hidden" /> <span className="text-indigo-500">UNSTOPPABLE.</span>
           </h2>
-          <button className="group relative px-16 md:px-24 py-8 bg-white text-black text-[10px] font-black uppercase tracking-[0.6em] hover:bg-indigo-600 hover:text-white transition-all duration-500 rounded-sm overflow-hidden active:scale-95 shadow-2xl">
+          {/* <button className="group relative px-16 md:px-24 py-8 bg-white text-black text-[10px] font-black uppercase tracking-[0.6em] hover:bg-indigo-600 hover:text-white transition-all duration-500 rounded-sm overflow-hidden active:scale-95 shadow-2xl">
             <span className="relative z-10 group-hover:tracking-[1em] transition-all duration-500">Access the Method</span>
             <div className="absolute inset-0 bg-indigo-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
-          </button>
+          </button> */}
           <div className="mt-12 flex items-center gap-4 text-[8px] font-black uppercase tracking-[0.4em] text-gray-700">
             <div className="flex -space-x-2">
               {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-white/5 border border-white/10"></div>)}
@@ -366,7 +365,7 @@ const Landing = () => {
             <div className="space-y-8">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center">
-                  <CheckCircle2 size={16} className="text-white" />
+                  <Target size={16} className="text-white" />
                 </div>
                 <span className="text-xl font-black tracking-tighter italic uppercase">FOCUSCORE</span>
               </div>

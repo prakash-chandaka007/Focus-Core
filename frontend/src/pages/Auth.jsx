@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, 
-  Lock, 
-  Mail, 
-  User, 
-  ArrowRight, 
+import {
+  ShieldCheck,
+  Lock,
+  Mail,
+  User,
+  ArrowRight,
   ChevronLeft,
-  CheckCircle2,
+  Target,
   Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Required for navigation
@@ -39,29 +39,36 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     // CORRECTION: Map 'fullName' to 'username' so authController.js can read it
-    const authData = isLogin 
+    const authData = isLogin
       ? { email: formData.email, password: formData.password }
-      : { 
-          username: formData.fullName, 
-          email: formData.email, 
-          password: formData.password 
-        };
+      : {
+        username: formData.fullName,
+        email: formData.email,
+        password: formData.password
+      };
 
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const res = await api.post(endpoint, authData); // Real API call
-      
+
       // Store the JWT for future requests
       localStorage.setItem('token', res.data.token);
-      
+
       console.log("Access Granted. Token Stored.");
       navigate('/dashboard'); // Redirect to protected dashboard
     } catch (err) {
       // Error handling for backend responses
-      const errorMsg = err.response?.data?.msg || "System Access Denied";
-      alert(errorMsg);
+      const errorData = err.response?.data;
+      const errorMsg = errorData?.msg || errorData?.message || errorData?.error || err.message || "System Access Denied";
+      console.error("Auth Error details:", err);
+
+      if (!err.response) {
+        alert("CRITICAL: Network Error. Is your backend server running on port 5000?");
+      } else {
+        alert(`System Error: ${errorMsg}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,7 +76,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-[#030303] text-[#f8fafc] font-['Plus_Jakarta_Sans',sans-serif] flex flex-col items-center justify-center p-6 overflow-hidden relative">
-      
+
       {/* BACKGROUND EFFECTS */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-indigo-600/10 blur-[120px] rounded-full animate-pulse-slow"></div>
@@ -78,8 +85,8 @@ const Auth = () => {
       </div>
 
       {/* BACK TO LANDING */}
-      <button 
-        onClick={() => navigate('/')} 
+      <button
+        onClick={() => navigate('/')}
         className={`absolute top-8 left-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition-all duration-700 group z-10 bg-transparent border-none cursor-pointer ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
@@ -88,7 +95,7 @@ const Auth = () => {
 
       {/* AUTH CARD */}
       <div className={`w-full max-w-md relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-        
+
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-6 border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.4)] relative group">
             <ShieldCheck size={32} className="text-white relative z-10" />
@@ -106,14 +113,14 @@ const Auth = () => {
 
         <div className="bg-white/[0.03] border border-white/5 backdrop-blur-2xl rounded-[32px] p-8 md:p-10 shadow-2xl transition-all duration-500 overflow-hidden">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
+
             {/* NAME FIELD (Conditional with Animation) */}
             <div className={`transition-all duration-500 ease-in-out overflow-hidden ${!isLogin ? 'max-h-32 opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}`}>
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Full Identity</label>
                 <div className="relative group">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                  <input 
+                  <input
                     type="text"
                     name="fullName"
                     value={formData.fullName}
@@ -130,8 +137,8 @@ const Auth = () => {
               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Secure Email</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -153,7 +160,7 @@ const Auth = () => {
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                <input 
+                <input
                   type="password"
                   name="password"
                   value={formData.password}
@@ -165,13 +172,13 @@ const Auth = () => {
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
             >
               <span className={`flex items-center justify-center gap-3 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
-                {isLogin ? 'Initialize Session' : 'Create Profile'} 
+                {isLogin ? 'Initialize Session' : 'Create Profile'}
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </span>
               {loading && (
@@ -186,7 +193,7 @@ const Auth = () => {
           <div className="mt-8 pt-8 border-t border-white/5 text-center animate-fade-in delay-500">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
               {isLogin ? "New to the system?" : "Already an operator?"}
-              <button 
+              <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="ml-2 text-indigo-500 hover:text-white transition-colors uppercase italic font-bold bg-transparent border-none cursor-pointer"
               >
@@ -203,13 +210,14 @@ const Auth = () => {
             <span>Encrypted Session</span>
           </div>
           <div className="flex items-center gap-2 animate-fade-in delay-1000">
-            <CheckCircle2 size={10} className="text-indigo-500" />
+            <Target size={10} className="text-indigo-500" />
             <span>Biometric Ready</span>
           </div>
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&display=swap');
         
         input::placeholder {
