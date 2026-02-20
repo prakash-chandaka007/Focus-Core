@@ -97,21 +97,21 @@ const Auth = () => {
       <div className={`w-full max-w-md relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
 
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-6 border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.4)] relative group">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-6 border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.4)] relative group animate-precision-docking stagger-1">
             <ShieldCheck size={32} className="text-white relative z-10" />
             <div className="absolute inset-0 bg-indigo-400 rounded-2xl blur-md opacity-0 group-hover:opacity-40 transition-opacity"></div>
           </div>
-          <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2 overflow-hidden">
-            <span className="block animate-slide-up">
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2 overflow-hidden animate-precision-docking stagger-2">
+            <span>
               {isLogin ? 'Operator Login' : 'System Enrollment'}
             </span>
           </h1>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-fade-in delay-300">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-precision-docking stagger-3">
             {isLogin ? 'Access your performance enclave' : 'Initialize your productivity core'}
           </p>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/5 backdrop-blur-2xl rounded-[32px] p-8 md:p-10 shadow-2xl transition-all duration-500 overflow-hidden">
+        <div className="bg-white/[0.03] border border-white/5 backdrop-blur-2xl rounded-[32px] p-8 md:p-10 shadow-2xl transition-all duration-500 overflow-hidden animate-precision-docking stagger-3">
           <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* NAME FIELD (Conditional with Animation) */}
@@ -133,7 +133,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="space-y-2 animate-fade-in delay-100">
+            <div className="space-y-2 animate-precision-docking stagger-4">
               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Secure Email</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
@@ -149,7 +149,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="space-y-2 animate-fade-in delay-200">
+            <div className="space-y-2 animate-precision-docking stagger-5">
               <div className="flex justify-between">
                 <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Access Key</label>
                 {isLogin && (
@@ -175,7 +175,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
+              className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer animate-precision-docking stagger-6"
             >
               <span className={`flex items-center justify-center gap-3 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
                 {isLogin ? 'Initialize Session' : 'Create Profile'}
@@ -190,7 +190,7 @@ const Auth = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-white/5 text-center animate-fade-in delay-500">
+          <div className="mt-8 pt-8 border-t border-white/5 text-center animate-precision-docking stagger-7">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
               {isLogin ? "New to the system?" : "Already an operator?"}
               <button
@@ -205,11 +205,11 @@ const Auth = () => {
 
         {/* SECURITY INFO Staggered */}
         <div className="mt-10 flex items-center justify-center gap-6 text-[8px] font-black uppercase tracking-[0.4em] text-gray-700">
-          <div className="flex items-center gap-2 animate-fade-in delay-700">
+          <div className="flex items-center gap-2 animate-precision-docking stagger-8">
             <Zap size={10} className="text-indigo-500" />
             <span>Encrypted Session</span>
           </div>
-          <div className="flex items-center gap-2 animate-fade-in delay-1000">
+          <div className="flex items-center gap-2 animate-precision-docking stagger-9">
             <Target size={10} className="text-indigo-500" />
             <span>Biometric Ready</span>
           </div>
@@ -225,23 +225,6 @@ const Auth = () => {
           letter-spacing: 0.2em;
         }
 
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
-        .delay-500 { animation-delay: 500ms; }
-        .delay-700 { animation-delay: 700ms; }
-        .delay-1000 { animation-delay: 1000ms; }
-
-        @keyframes slide-up {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         @keyframes shine {
           100% { left: 125%; }
         }
@@ -251,8 +234,6 @@ const Auth = () => {
           50% { opacity: 0.2; transform: scale(1.05); }
         }
 
-        .animate-slide-up { animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .animate-fade-in { animation: fade-in 0.8s ease-out both; }
         .animate-shine { animation: shine 0.8s ease-in-out; }
         .animate-pulse-slow { animation: pulse-slow 8s infinite ease-in-out; }
       `}} />

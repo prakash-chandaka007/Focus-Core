@@ -7,7 +7,7 @@ const FooterPromo = () => {
     };
 
     return (
-        <section className="relative py-16 px-8 border border-white/5 overflow-hidden rounded-[40px] bg-indigo-600/[0.03] mt-20 mb-10 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12 animate-reveal-up">
+        <section className="relative py-16 px-8 border border-white/5 overflow-hidden rounded-[40px] bg-indigo-600/[0.03] mt-20 mb-10 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12 animate-precision-docking stagger-5">
             <div className="absolute inset-0 bg-indigo-600/[0.01] animate-pulse-glow pointer-events-none"></div>
 
             <div className="flex-1 space-y-6 relative z-10 text-center md:text-left">
