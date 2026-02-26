@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import Background from '../components/dashboard/Background';
-import Sidebar from '../components/dashboard/Sidebar';
 import Header from '../components/dashboard/Header';
 import DashboardOverview from '../components/dashboard/DashboardOverview';
 import TaskEngine from '../components/dashboard/TaskEngine';
 import TaskModal from '../components/dashboard/TaskModal';
+import HabitTracker from '../components/dashboard/HabitTracker';
+import Analytics from '../components/dashboard/Analytics';
 import StrategicTicker from '../components/dashboard/StrategicTicker';
 import api from '../services/api';
 import Footer from '../components/dashboard/Footer';
@@ -25,39 +26,49 @@ const Dashboard = () => {
 
   // --- TASK STATE ---
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ title: '', category: 'General', priority: 'Medium' });
+  const [newTask, setNewTask] = useState({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes' });
+  const [sortBy, setSortBy] = useState('priority');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  // --- HABIT STATE ---
+  const [habits, setHabits] = useState([]);
+
+  // --- ANALYTICS STATE ---
+  const [analytics, setAnalytics] = useState(null);
 
   // 1. Initial Data Fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userRes, tasksRes] = await Promise.all([
-          api.get('/auth/user').catch(e => { console.error("User fetch failed:", e); return { data: null }; }),
-          api.get('/tasks').catch(e => { console.error("Tasks fetch failed:", e); return { data: [] }; })
+        const [userRes, tasksRes, habitsRes, analyticsRes] = await Promise.all([
+          api.get('/auth/user').catch(e => { console.error('User fetch failed:', e); return { data: null }; }),
+          api.get('/tasks').catch(e => { console.error('Tasks fetch failed:', e); return { data: [] }; }),
+          api.get('/habits').catch(e => { console.error('Habits fetch failed:', e); return { data: [] }; }),
+          api.get('/analytics').catch(e => { console.error('Analytics fetch failed:', e); return { data: null }; }),
         ]);
 
-        if (userRes.data) {
-          setUser(userRes.data);
-        }
+        if (userRes.data) setUser(userRes.data);
 
-        // Map backend 'text' to frontend 'title' and '_id' to 'id'
         const rawTasks = Array.isArray(tasksRes.data) ? tasksRes.data : [];
         const mappedTasks = rawTasks.map(t => ({
           id: t._id || Math.random().toString(36).substr(2, 9),
           title: t.text || 'Untitled Objective',
           category: t.category || 'General',
-          priority: (t.priority && typeof t.priority === 'string')
-            ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
-            : 'Medium',
+          priority: t.priority || 'medium',
           status: t.status || 'pending',
+          duration: t.duration || 30,
           createdAt: t.createdAt ? new Date(t.createdAt) : new Date()
         }));
         setTasks(mappedTasks);
 
+        const rawHabits = Array.isArray(habitsRes.data) ? habitsRes.data : [];
+        setHabits(rawHabits);
+
+        if (analyticsRes.data) setAnalytics(analyticsRes.data);
+
         setIsVisible(true);
       } catch (err) {
-        console.error("Critical dashboard initialization error:", err);
-        // We still set isVisible to true to avoid blank screen if partial data loaded
+        console.error('Critical dashboard initialization error:', err);
         setIsVisible(true);
       } finally {
         setLoading(false);
@@ -67,31 +78,30 @@ const Dashboard = () => {
     fetchData();
   }, [navigate]);
 
-  // 2. Scroll Detection
+  // 2. Refetch analytics whenever habits or tasks change
+  useEffect(() => {
+    if (!loading) {
+      api.get('/analytics')
+        .then(res => setAnalytics(res.data))
+        .catch(() => { });
+    }
+  }, [habits, tasks, loading]);
+
+  // 3. Scroll Detection
   useEffect(() => {
     const handleScroll = () => {
       if (scrollContainerRef.current) {
-        const scrollTop = scrollContainerRef.current.scrollTop;
-        setScrolled(scrollTop > 20);
+        setScrolled(scrollContainerRef.current.scrollTop > 20);
       }
     };
-
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-    }
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
-      }
-    };
+    if (container) container.addEventListener('scroll', handleScroll);
+    return () => { if (container) container.removeEventListener('scroll', handleScroll); };
   }, [loading]);
 
-  // 3. Scroll to top on tab switch
+  // 4. Scroll to top on tab switch
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo(0, 0);
-    }
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTo(0, 0);
   }, [activeTab]);
 
   // User Stats Calculation
@@ -99,42 +109,48 @@ const Dashboard = () => {
   const pendingCount = tasks.filter(t => t.status === 'pending').length;
   const completionPercentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
+  // Habit stats for DashboardOverview
+  const completedHabits = habits.filter(h => h.completedToday >= h.goalFrequency).length;
+  const habitRate = habits.length > 0 ? Math.round((completedHabits / habits.length) * 100) : 0;
+
   const userStats = {
-    userName: user?.username || "Operator",
-    userRole: user?.email ? "Pro Member" : "Guest Mode",
+    userName: user?.username || 'Operator',
+    userRole: user?.email ? 'Pro Member' : 'Guest Mode',
     dailyCompletion: completionPercentage,
     currentStreak: user?.currentStreak || 0,
+    userLevel: user?.levelTitle || 'Novice',
     totalTasksDone: completedCount,
-    pendingTasks: pendingCount
+    pendingTasks: pendingCount,
+    habitRate
   };
 
-  // --- CRUD OPERATIONS ---
+  // --- TASK CRUD ---
   const addTask = async (e) => {
     e.preventDefault();
     if (!newTask.title) return;
-
     try {
+      const unitMultiplier = { days: 1440, hours: 60, minutes: 1 };
+      const durationInMinutes = (newTask.durationValue || 30) * (unitMultiplier[newTask.durationUnit] || 1);
       const res = await api.post('/tasks', {
         text: newTask.title,
         priority: newTask.priority.toLowerCase(),
-        category: newTask.category
+        category: newTask.category,
+        duration: durationInMinutes
       });
-
       const mappedTask = {
         id: res.data._id,
         title: res.data.text,
         category: res.data.category,
-        priority: res.data.priority.charAt(0).toUpperCase() + res.data.priority.slice(1),
+        priority: res.data.priority,
         status: res.data.status,
+        duration: res.data.duration,
         createdAt: new Date(res.data.createdAt)
       };
-
       setTasks([mappedTask, ...tasks]);
-      setNewTask({ title: '', category: 'General', priority: 'Medium' });
+      setNewTask({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes' });
       setIsModalOpen(false);
     } catch (err) {
-      console.error("Failed to add task:", err);
-      // Optional: Add local fallback if backend fails (optimistic UI)
+      console.error('Failed to add task:', err);
     }
   };
 
@@ -142,28 +158,24 @@ const Dashboard = () => {
     const taskToToggle = tasks.find(t => t.id === id);
     if (!taskToToggle) return;
     const newStatus = taskToToggle.status === 'completed' ? 'pending' : 'completed';
-
-    // Optimistic Update
     const previousTasks = [...tasks];
     setTasks(tasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
-
     try {
       await api.patch(`/tasks/${id}`, { status: newStatus });
     } catch (err) {
-      console.error("Status update failed:", err);
-      setTasks(previousTasks); // Rollback
+      console.error('Status update failed:', err);
+      setTasks(previousTasks);
     }
   };
 
   const deleteTask = async (id) => {
     const previousTasks = [...tasks];
     setTasks(tasks.filter(t => t.id !== id));
-
     try {
       await api.delete(`/tasks/${id}`);
     } catch (err) {
-      console.error("Delete failed:", err);
-      setTasks(previousTasks); // Rollback
+      console.error('Delete failed:', err);
+      setTasks(previousTasks);
     }
   };
 
@@ -171,7 +183,60 @@ const Dashboard = () => {
     if (filter === 'pending') return t.status === 'pending';
     if (filter === 'completed') return t.status === 'completed';
     return true;
+  }).sort((a, b) => {
+    if (sortBy === 'priority') {
+      const priorityWeights = { high: 3, medium: 2, low: 1 };
+      const wA = priorityWeights[a.priority] || 0;
+      const wB = priorityWeights[b.priority] || 0;
+      return sortOrder === 'asc' ? wB - wA : wA - wB;
+    } else if (sortBy === 'time') {
+      const getRemaining = (task) => new Date(task.createdAt.getTime() + task.duration * 60000) - new Date();
+      return sortOrder === 'asc' ? getRemaining(a) - getRemaining(b) : getRemaining(b) - getRemaining(a);
+    }
+    return 0;
   });
+
+  // --- HABIT CRUD ---
+  const addHabit = async (formData) => {
+    try {
+      const res = await api.post('/habits', {
+        name: formData.name,
+        category: formData.category,
+        goalFrequency: formData.goalFrequency
+      });
+      setHabits([res.data, ...habits]);
+    } catch (err) {
+      console.error('Failed to add habit:', err);
+    }
+  };
+
+  const incrementHabit = async (id) => {
+    const prev = [...habits];
+    // Optimistic update
+    setHabits(habits.map(h => h._id === id
+      ? { ...h, completedToday: Math.min(h.completedToday + 1, h.goalFrequency) }
+      : h
+    ));
+    try {
+      const res = await api.put(`/habits/increment/${id}`);
+      // Sync with server response
+      setHabits(prev => prev.map(h => h._id === id ? res.data : h));
+    } catch (err) {
+      console.error('Increment failed:', err.response?.data?.msg || err.message);
+      setHabits(prev);
+    }
+  };
+
+  const deleteHabit = async (id) => {
+    const prev = [...habits];
+    setHabits(habits.filter(h => h._id !== id));
+    try {
+      await api.delete(`/habits/${id}`);
+    } catch (err) {
+      console.error('Delete habit failed:', err);
+      setHabits(prev);
+    }
+  };
 
   if (loading) {
     return (
@@ -188,11 +253,6 @@ const Dashboard = () => {
     <div className="h-screen w-screen bg-[#020202] text-slate-200 font-['Plus_Jakarta_Sans',sans-serif] flex flex-col md:flex-row overflow-hidden">
 
       <Background />
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        className="animate-precision-docking"
-      />
 
       <main className="flex-1 flex flex-col overflow-hidden relative z-10 transition-all duration-700 ease-[cubic-bezier(0.23, 1, 0.32, 1)] pb-20 md:pb-0">
         <div
@@ -201,57 +261,93 @@ const Dashboard = () => {
         >
           <Header
             activeTab={activeTab}
+            setActiveTab={setActiveTab}
             userStats={userStats}
             setIsModalOpen={setIsModalOpen}
             scrolled={scrolled}
           />
-          <div className="max-w-[1400px] mx-auto px-6 md:px-10 pb-0 space-y-8 md:space-y-12 min-h-screen">
-            <div key={activeTab} className="space-y-8 md:space-y-12 animate-precision-docking stagger-2">
-              {activeTab === 'dashboard' && (
-                <div className="relative p-12 md:p-16 rounded-[48px] bg-gradient-to-br from-indigo-600/20 via-blue-600/5 to-transparent border border-white/10 overflow-hidden group animate-precision-docking stagger-1 backdrop-blur-xl">
-                  {/* Big Rotating Star (To and Fro) */}
-                  <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-20 pointer-events-none animate-swing filter blur-[2px]">
-                    <Star size={160} className="text-yellow-400 fill-yellow-400/20" />
-                  </div>
+          <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-8 md:py-12 min-h-screen">
+            <div className="relative w-full rounded-[32px] md:rounded-[48px] border border-white/10 bg-[#050505]/60 backdrop-blur-3xl p-6 md:p-12 shadow-[0_0_60px_rgba(0,0,0,0.6)] overflow-hidden">
+              {/* Futuristic HUD Background Elements */}
+              <div className="absolute top-0 left-0 w-40 h-[2px] bg-gradient-to-r from-indigo-500 to-transparent"></div>
+              <div className="absolute top-0 right-0 w-[2px] h-40 bg-gradient-to-b from-indigo-500 to-transparent"></div>
+              <div className="absolute bottom-0 right-0 w-40 h-[2px] bg-gradient-to-l from-indigo-500 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 w-[2px] h-40 bg-gradient-to-t from-indigo-500 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.08),transparent_70%)] pointer-events-none"></div>
 
-                  {/* Subtle Scanline Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent h-40 w-full animate-[scanning-line_8s_linear_infinite] pointer-events-none"></div>
+              <div className="absolute top-8 right-10 flex gap-1.5 opacity-40 pointer-events-none">
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></div>
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+              </div>
 
-                  <div className="relative z-10 flex flex-col gap-6">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">System Active // Operator Entry</span>
+              <div key={activeTab} className="space-y-8 md:space-y-12 animate-precision-docking stagger-2 relative z-10 block">
+
+                {/* ── Dashboard Welcome Banner ── */}
+                {activeTab === 'dashboard' && (
+                  <div className="relative p-12 md:p-16 rounded-[48px] bg-gradient-to-br from-indigo-600/20 via-blue-600/5 to-transparent border border-white/10 overflow-hidden group animate-precision-docking stagger-1 backdrop-blur-xl">
+                    <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-20 pointer-events-none animate-swing filter blur-[2px]">
+                      <Star size={160} className="text-yellow-400 fill-yellow-400/20" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent h-40 w-full animate-[scanning-line_8s_linear_infinite] pointer-events-none"></div>
+                    <div className="relative z-10 flex flex-col gap-6">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">System Active // Operator Entry</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-[-0.04em] italic uppercase leading-tight">
+                          Welcome back, <br />
+                          <span className="text-indigo-400">{userStats.userName.split(' ')[0]}</span>
+                        </h2>
                       </div>
-                      <h2 className="text-4xl md:text-5xl font-black text-white tracking-[-0.04em] italic uppercase leading-tight">
-                        Welcome back, <br />
-                        <span className="text-indigo-400">{userStats.userName.split(' ')[0]}</span>
-                      </h2>
-                    </div>
-                    <p className="text-slate-400 max-w-xl font-bold leading-relaxed uppercase text-[11px] tracking-widest opacity-80">
-                      Streak Integrity: <span className="text-white font-black italic">{userStats.currentStreak} Days</span> //
-                      Resource Load: <span className="text-white font-black italic">{userStats.pendingTasks} Active Tasks</span>
-                    </p>
-                    <div className="w-full max-w-md h-1 bg-white/5 rounded-full overflow-hidden mt-4">
-                      <div className="h-full bg-indigo-500 w-3/4 animate-glow-pulse"></div>
+                      <p className="text-slate-400 max-w-xl font-bold leading-relaxed uppercase text-[11px] tracking-widest opacity-80">
+                        Streak Integrity: <span className="text-white font-black italic">{userStats.currentStreak} Days</span> //
+                        Resource Load: <span className="text-white font-black italic">{userStats.pendingTasks} Active Tasks</span>
+                      </p>
+                      <div className="w-full max-w-md h-1 bg-white/5 rounded-full overflow-hidden mt-4">
+                        <div className="h-full bg-indigo-500 w-3/4 animate-glow-pulse"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeTab === 'tasks' && (
-                <TaskEngine
-                  filteredTasks={filteredTasks}
-                  filter={filter}
-                  setFilter={setFilter}
-                  toggleTaskStatus={toggleTaskStatus}
-                  deleteTask={deleteTask}
-                />
-              )}
+                {/* ── Overview Stats ── */}
+                {activeTab === 'dashboard' && (
+                  <DashboardOverview userStats={userStats} habits={habits} />
+                )}
 
-              {activeTab === 'dashboard' && (
-                <DashboardOverview userStats={userStats} />
-              )}
+                {/* ── Task Engine ── */}
+                {activeTab === 'tasks' && (
+                  <TaskEngine
+                    filteredTasks={filteredTasks}
+                    filter={filter}
+                    setFilter={setFilter}
+                    toggleTaskStatus={toggleTaskStatus}
+                    deleteTask={deleteTask}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    sortOrder={sortOrder}
+                    setSortOrder={setSortOrder}
+                  />
+                )}
+
+                {/* ── Habit Tracker ── */}
+                {activeTab === 'habits' && (
+                  <HabitTracker
+                    habits={habits}
+                    onAddHabit={addHabit}
+                    onIncrementHabit={incrementHabit}
+                    onDeleteHabit={deleteHabit}
+                  />
+                )}
+
+                {/* ── Analytics ── */}
+                {activeTab === 'progress' && (
+                  <Analytics analytics={analytics} />
+                )}
+
+              </div>
             </div>
           </div>
 
@@ -267,8 +363,8 @@ const Dashboard = () => {
           newTask={newTask}
           setNewTask={setNewTask}
         />
-      </main >
-    </div >
+      </main>
+    </div>
   );
 };
 

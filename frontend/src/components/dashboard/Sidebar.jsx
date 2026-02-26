@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     ListTodo,
@@ -7,8 +8,11 @@ import {
     TrendingUp,
     Settings,
     Power,
-    Target
+    Target,
+    Sun,
+    Moon
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const NavItem = ({ icon, label, active, onClick, staggerClass }) => (
     <button
@@ -32,10 +36,19 @@ const NavItem = ({ icon, label, active, onClick, staggerClass }) => (
 );
 
 const Sidebar = ({ activeTab, setActiveTab, className }) => {
+    const navigate = useNavigate();
+    const { theme, toggle, isDark } = useTheme();
+
+    const handleSignOut = () => {
+        localStorage.removeItem('token');
+        navigate('/auth');
+    };
+
     return (
         <aside
             className={`fixed bottom-0 left-0 right-0 h-20 md:h-screen md:w-72 md:relative md:static bg-black/40 backdrop-blur-3xl border-t md:border-t-0 md:border-r border-indigo-500/20 z-50 transition-all duration-500 flex flex-row md:flex-col p-4 md:p-10 overflow-hidden ${className}`}
         >
+            {/* Logo */}
             <div className="hidden md:flex mb-16 items-center gap-4 px-2 animate-precision-docking stagger-1 relative group/logo">
                 <div className="absolute -inset-2 bg-indigo-500/5 blur-2xl opacity-0 group-hover/logo:opacity-100 transition-opacity duration-500"></div>
                 <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.4)] shrink-0 border border-white/20 relative overflow-hidden">
@@ -44,12 +57,13 @@ const Sidebar = ({ activeTab, setActiveTab, className }) => {
                 </div>
                 <div className="flex flex-col">
                     <h1 className="text-xl font-black tracking-[-0.08em] text-white italic uppercase leading-none">
-                        FOCUS CARE
+                        FOCUS CORE
                     </h1>
                     <span className="text-[7px] font-black text-indigo-400 uppercase tracking-[0.5em] mt-1 opacity-60">System Core v2.0</span>
                 </div>
             </div>
 
+            {/* Nav */}
             <nav className="flex-1 flex flex-row md:flex-col items-center justify-around md:justify-start md:space-y-4 gap-2 w-full">
                 <NavItem icon={<LayoutDashboard size={20} />} label="Overview" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} staggerClass="stagger-2" />
                 <NavItem icon={<ListTodo size={20} />} label="To-Do List" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} staggerClass="stagger-3" />
@@ -58,13 +72,46 @@ const Sidebar = ({ activeTab, setActiveTab, className }) => {
                 <NavItem icon={<TrendingUp size={20} />} label="Analytics" active={activeTab === 'progress'} onClick={() => setActiveTab('progress')} staggerClass="stagger-6" />
             </nav>
 
+            {/* Bottom actions */}
             <div className="hidden md:flex mt-auto pt-8 border-t border-white/5 flex-col space-y-3">
-                <button className="w-full flex items-center justify-start gap-4 p-4 text-slate-500 hover:text-white transition-all border border-white/5 bg-transparent cursor-pointer group hover-glow rounded-2xl animate-precision-docking stagger-7">
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggle}
+                    className="w-full flex items-center justify-start gap-4 p-4 text-slate-500 hover:text-white transition-all border border-white/5 bg-transparent cursor-pointer group hover-glow rounded-2xl animate-precision-docking stagger-7"
+                    title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                    <div className="relative w-5 h-5 shrink-0">
+                        <Sun
+                            size={20}
+                            className={`absolute inset-0 transition-all duration-500 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'}`}
+                        />
+                        <Moon
+                            size={20}
+                            className={`absolute inset-0 transition-all duration-500 ${isDark ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}`}
+                        />
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-widest">
+                        {isDark ? 'Light Mode' : 'Dark Mode'}
+                    </span>
+                    {/* Toggle pill */}
+                    <div className="ml-auto">
+                        <div className={`w-10 h-5 rounded-full border transition-all duration-500 flex items-center px-0.5 ${isDark ? 'bg-white/5 border-white/10' : 'bg-indigo-500/20 border-indigo-500/30'}`}>
+                            <div className={`w-4 h-4 rounded-full transition-all duration-500 shadow-sm ${isDark ? 'bg-slate-500 translate-x-0' : 'bg-indigo-500 translate-x-5'}`} />
+                        </div>
+                    </div>
+                </button>
+
+                <button className="w-full flex items-center justify-start gap-4 p-4 text-slate-500 hover:text-white transition-all border border-white/5 bg-transparent cursor-pointer group hover-glow rounded-2xl animate-precision-docking stagger-8">
                     <Settings size={20} className="shrink-0" />
                     <span className="text-[11px] font-black uppercase tracking-widest">Settings</span>
                 </button>
-                <button className="w-full flex items-center justify-start gap-4 p-4 text-slate-500 hover:text-white transition-all border border-white/5 bg-transparent cursor-pointer group hover-glow rounded-2xl animate-precision-docking stagger-8">
-                    <Power size={20} className="group-hover:text-red-400 shrink-0" />
+
+                {/* Sign Out */}
+                <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center justify-start gap-4 p-4 text-slate-500 hover:text-red-400 transition-all border border-white/5 hover:border-red-500/20 hover:bg-red-500/5 bg-transparent cursor-pointer group hover-glow rounded-2xl animate-precision-docking stagger-9"
+                >
+                    <Power size={20} className="group-hover:text-red-400 shrink-0 transition-colors" />
                     <span className="text-[11px] font-black uppercase tracking-widest">Sign Out</span>
                 </button>
             </div>

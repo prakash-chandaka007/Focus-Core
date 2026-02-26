@@ -24,6 +24,10 @@ const TaskSchema = new mongoose.Schema({
     category: {
         type: String,
         default: 'General'
+    },
+    duration: {
+        type: Number,
+        default: 30
     }
 }, { timestamps: true });
 

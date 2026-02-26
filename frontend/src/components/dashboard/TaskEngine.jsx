@@ -2,7 +2,7 @@ import React from 'react';
 import { ListTodo } from 'lucide-react';
 import TaskItem from './TaskItem';
 
-const TaskEngine = ({ filteredTasks, filter, setFilter, toggleTaskStatus, deleteTask }) => {
+const TaskEngine = ({ filteredTasks, filter, setFilter, toggleTaskStatus, deleteTask, sortBy, setSortBy, sortOrder, setSortOrder }) => {
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative p-6 rounded-[32px] bg-white/[0.02] border border-white/5 overflow-hidden group">
@@ -11,19 +11,50 @@ const TaskEngine = ({ filteredTasks, filter, setFilter, toggleTaskStatus, delete
                     <p className="text-slate-500 text-[10px] mt-2 uppercase font-black tracking-[0.3em]">{filteredTasks.length} Directives active in current sector</p>
                 </div>
 
-                <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl self-start md:self-center backdrop-blur-md transition-all duration-300 hover:border-white/20 animate-precision-docking stagger-2">
-                    {['all', 'pending', 'executed'].map((f) => (
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl self-start md:self-center backdrop-blur-md transition-all duration-300 hover:border-white/20 animate-precision-docking stagger-2">
+                        {['all', 'pending', 'executed'].map((f) => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f === 'executed' ? 'completed' : f)}
+                                className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 border border-white/5 cursor-pointer hover:scale-105 active:scale-95 ${filter === (f === 'executed' ? 'completed' : f)
+                                    ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]'
+                                    : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                {f === 'all' ? 'System All' : f}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl self-start md:self-center backdrop-blur-md transition-all duration-300 hover:border-white/20 animate-precision-docking stagger-3">
                         <button
-                            key={f}
-                            onClick={() => setFilter(f === 'executed' ? 'completed' : f)}
-                            className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 border border-white/5 cursor-pointer hover:scale-105 active:scale-95 ${filter === (f === 'executed' ? 'completed' : f)
-                                ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]'
-                                : 'text-slate-500 hover:text-white hover:bg-white/5'
-                                }`}
+                            onClick={() => {
+                                if (sortBy === 'priority') {
+                                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                                } else {
+                                    setSortBy('priority');
+                                    setSortOrder('asc');
+                                }
+                            }}
+                            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border border-white/5 cursor-pointer ${sortBy === 'priority' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'text-slate-500 hover:text-white'}`}
                         >
-                            {f === 'all' ? 'System All' : f}
+                            Priority {sortBy === 'priority' && (sortOrder === 'asc' ? '↑' : '↓')}
                         </button>
-                    ))}
+                        <button
+                            onClick={() => {
+                                if (sortBy === 'time') {
+                                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                                } else {
+                                    setSortBy('time');
+                                    setSortOrder('asc');
+                                }
+                            }}
+                            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border border-white/5 cursor-pointer ${sortBy === 'time' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            Time Left {sortBy === 'time' && (sortOrder === 'asc' ? '↑' : '↓')}
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -26,16 +26,16 @@ const MissionClock = () => {
     };
 
     return (
-        <div className="flex flex-col items-end opacity-60">
+        <div className="flex flex-col items-start opacity-70">
             <div className="flex items-center gap-2">
                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Session Time</span>
-                <span className="text-[12px] font-black text-white italic tracking-tighter w-16 text-right font-mono">
+                <span className="text-[12px] font-black text-white italic tracking-tighter w-[68px] text-left font-mono">
                     {formatTime(time)}
                 </span>
             </div>
             <div className="flex items-center gap-2">
                 <span className="text-[7px] font-black text-indigo-500/50 uppercase tracking-[0.3em]">Uptime</span>
-                <span className="text-[9px] font-black text-indigo-400 italic tracking-tighter w-12 text-right font-mono">
+                <span className="text-[9px] font-black text-indigo-400 italic tracking-tighter w-[56px] text-left font-mono">
                     +{formatUptime(uptime)}
                 </span>
             </div>

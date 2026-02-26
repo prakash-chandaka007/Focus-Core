@@ -11,22 +11,36 @@ const HabitSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    description: {
-        type: String
-    },
-    frequency: {
+    category: {
         type: String,
-        enum: ['daily', 'weekly'],
-        default: 'daily'
+        default: 'General'
+    },
+    goalFrequency: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
+    targetDays: {
+        type: [Number], // 0 (Sun) to 6 (Sat)
+        default: [0, 1, 2, 3, 4, 5, 6]
+    },
+    completedToday: {
+        type: Number,
+        default: 0
+    },
+    lastResetDate: {
+        type: String, // stored as 'YYYY-MM-DD'
+        default: null
     },
     streak: {
         type: Number,
         default: 0
     },
     lastCompleted: {
-        type: Date
+        type: Date,
+        default: null
     },
-    // Historical data for Recharts/Chart.js
+    // Historical data — one entry per increment
     logs: [{
         date: { type: Date, default: Date.now },
         status: { type: String, default: 'completed' }

@@ -9,6 +9,8 @@ dotenv.config();
 // 2. Import Routes (Moved up for clarity)
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const habitRoutes = require('./routes/habitRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.get('/ping', (req, res) => res.json({ msg: 'Pong', time: new Date().toISOStr
 app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/habits', habitRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 6. Global Error Handling Middleware
 // This catches any error thrown in your routes so the server doesn't crash
