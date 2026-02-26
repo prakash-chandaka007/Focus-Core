@@ -1,12 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// CORRECTED PATHS: Using ./ to stay inside src and adding extensions
+
 import Auth from './pages/Auth.jsx';
 import Landing from './pages/Landing.jsx';
 import Dashboard from './pages/Dashboard.jsx';
-
-// A simple Protected Route component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/auth" />;
