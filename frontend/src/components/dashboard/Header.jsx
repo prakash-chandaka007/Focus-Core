@@ -59,8 +59,8 @@ const Header = ({ activeTab, setActiveTab, userStats, setIsModalOpen, scrolled }
                         <h1 className="text-lg md:text-xl font-black tracking-[-0.08em] text-white italic uppercase leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
                             FOCUS CORE
                         </h1>
-                        <p className={`text-[8px] md:text-[9px] text-indigo-400 font-black uppercase tracking-[0.4em] transition-all duration-700 mt-1 ${scrolled ? 'opacity-0 h-0 m-0 overflow-hidden' : 'opacity-80'}`}>
-                            System <span className="animate-pulse animate-text-jitter text-white">Active</span>
+                        <p className={`text-[8px] md:text-[9px] text-indigo-400 font-black uppercase tracking-[0.4em] transition-all duration-700 mt-1 flex items-center gap-2 ${scrolled ? 'opacity-0 h-0 m-0 overflow-hidden' : 'opacity-80'}`}>
+                            Mode <span className="animate-pulse animate-text-jitter text-white">{isDark ? 'Tactical' : 'Stealth'}</span>
                         </p>
                     </div>
                 </div>
@@ -129,7 +129,7 @@ const Header = ({ activeTab, setActiveTab, userStats, setIsModalOpen, scrolled }
                     <div className="relative w-5 h-5">
                         <Sun
                             size={18}
-                            className={`absolute inset-0 text-yellow-400 transition-all duration-500 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'}`}
+                            className={`absolute inset-0 text-yellow-500 transition-all duration-500 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'}`}
                         />
                         <Moon
                             size={18}
@@ -137,7 +137,7 @@ const Header = ({ activeTab, setActiveTab, userStats, setIsModalOpen, scrolled }
                         />
                     </div>
                     <span className={`font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-white transition-colors ${scrolled ? 'hidden lg:block' : 'hidden sm:block'}`}>
-                        {isDark ? 'Light' : 'Dark'}
+                        {isDark ? 'Stealth' : 'Tactical'}
                     </span>
                 </button>
 

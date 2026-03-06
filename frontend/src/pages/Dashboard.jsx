@@ -8,12 +8,15 @@ import TaskEngine from '../components/dashboard/TaskEngine';
 import TaskModal from '../components/dashboard/TaskModal';
 import HabitTracker from '../components/dashboard/HabitTracker';
 import Analytics from '../components/dashboard/Analytics';
+import Schedule from '../components/dashboard/Schedule';
 import StrategicTicker from '../components/dashboard/StrategicTicker';
 import api from '../services/api';
 import Footer from '../components/dashboard/Footer';
 import FooterPromo from '../components/dashboard/FooterPromo';
+import { useTheme } from '../context/ThemeContext';
 
 const Dashboard = () => {
+  const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isVisible, setIsVisible] = useState(false);
@@ -26,7 +29,7 @@ const Dashboard = () => {
 
   // --- TASK STATE ---
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes' });
+  const [newTask, setNewTask] = useState({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes', scheduledDate: null, startTime: null });
   const [sortBy, setSortBy] = useState('priority');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -57,6 +60,8 @@ const Dashboard = () => {
           priority: t.priority || 'medium',
           status: t.status || 'pending',
           duration: t.duration || 30,
+          scheduledDate: t.scheduledDate,
+          startTime: t.startTime,
           createdAt: t.createdAt ? new Date(t.createdAt) : new Date()
         }));
         setTasks(mappedTasks);
@@ -135,7 +140,9 @@ const Dashboard = () => {
         text: newTask.title,
         priority: newTask.priority.toLowerCase(),
         category: newTask.category,
-        duration: durationInMinutes
+        duration: durationInMinutes,
+        scheduledDate: newTask.scheduledDate,
+        startTime: newTask.startTime
       });
       const mappedTask = {
         id: res.data._id,
@@ -144,10 +151,12 @@ const Dashboard = () => {
         priority: res.data.priority,
         status: res.data.status,
         duration: res.data.duration,
+        scheduledDate: res.data.scheduledDate,
+        startTime: res.data.startTime,
         createdAt: new Date(res.data.createdAt)
       };
       setTasks([mappedTask, ...tasks]);
-      setNewTask({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes' });
+      setNewTask({ title: '', category: 'General', priority: 'medium', durationValue: 30, durationUnit: 'minutes', scheduledDate: null, startTime: null });
       setIsModalOpen(false);
     } catch (err) {
       console.error('Failed to add task:', err);
@@ -267,8 +276,9 @@ const Dashboard = () => {
             scrolled={scrolled}
           />
           <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-8 md:py-12 min-h-screen">
-            <div className="relative w-full rounded-[32px] md:rounded-[48px] border border-white/10 bg-[#050505]/60 backdrop-blur-3xl p-6 md:p-12 shadow-[0_0_60px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className={`relative w-full rounded-[32px] md:rounded-[48px] border ${isDark ? 'border-indigo-500/20' : 'border-white/10'} bg-[#0a0a0c]/80 backdrop-blur-3xl p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-700`}>
               {/* Futuristic HUD Background Elements */}
+              <div className="scanning-grid opacity-[0.03] pointer-events-none"></div>
               <div className="absolute top-0 left-0 w-40 h-[2px] bg-gradient-to-r from-indigo-500 to-transparent"></div>
               <div className="absolute top-0 right-0 w-[2px] h-40 bg-gradient-to-b from-indigo-500 to-transparent"></div>
               <div className="absolute bottom-0 right-0 w-40 h-[2px] bg-gradient-to-l from-indigo-500 to-transparent"></div>
@@ -344,7 +354,12 @@ const Dashboard = () => {
 
                 {/* ── Analytics ── */}
                 {activeTab === 'progress' && (
-                  <Analytics analytics={analytics} />
+                  <Analytics analytics={analytics} isDark={isDark} />
+                )}
+
+                {/* ── Schedule ── */}
+                {activeTab === 'schedule' && (
+                  <Schedule user={user} />
                 )}
 
               </div>

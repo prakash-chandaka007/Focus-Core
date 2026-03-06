@@ -3,13 +3,15 @@ const Task = require('../models/Task');
 // @desc Create a new task
 exports.createTask = async (req, res) => {
     try {
-        const { text, priority, category, duration } = req.body;
+        const { text, priority, category, duration, scheduledDate, startTime } = req.body;
         const newTask = new Task({
             user: req.user.id,
             text,
             priority,
             category,
-            duration
+            duration,
+            scheduledDate,
+            startTime
         });
         const task = await newTask.save();
         res.status(201).json(task);
@@ -18,10 +20,15 @@ exports.createTask = async (req, res) => {
     }
 };
 
-// @desc Get all tasks for logged-in user
+// @desc Get all tasks for logged-in user (optional date filter)
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find({ user: req.user.id }).sort({ createdAt: -1 });
+        const query = { user: req.user.id };
+        if (req.query.date) {
+            query.scheduledDate = req.query.date;
+        }
+
+        const tasks = await Task.find(query).sort({ startTime: 1, createdAt: -1 });
         res.json(tasks);
     } catch (err) {
         res.status(500).json({ msg: 'Server Error' });

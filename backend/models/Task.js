@@ -28,6 +28,14 @@ const TaskSchema = new mongoose.Schema({
     duration: {
         type: Number,
         default: 30
+    },
+    scheduledDate: {
+        type: String, // 'YYYY-MM-DD'
+        default: null
+    },
+    startTime: {
+        type: String, // 'HH:mm'
+        default: null
     }
 }, { timestamps: true });
 

@@ -1,29 +1,29 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, Activity, Zap, CheckCircle2, Flame } from 'lucide-react';
+import { TrendingUp, Activity, Zap, CheckCircle2, Flame, BarChart3, PieChart, LayoutGrid } from 'lucide-react';
 
 // ── SVG Bar Chart ──────────────────────────────────────────────────────────────
-const EfficiencyChart = ({ weeklyTaskData }) => {
+const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
     const maxVal = 100;
-    const chartH = 140;
-    const chartW = 100; // percent-based via viewBox
-    const barW = 10;
+    const chartH = 120;
+    const chartW = 100;
+    const barW = 8;
     const gap = (chartW - weeklyTaskData.length * barW) / (weeklyTaskData.length + 1);
 
     return (
-        <div className="w-full">
+        <div className="w-full h-full flex items-end">
             <svg
-                viewBox={`0 0 ${chartW} ${chartH + 24}`}
+                viewBox={`-12 -10 ${chartW + 15} ${chartH + 35}`}
                 className="w-full overflow-visible"
-                preserveAspectRatio="xMidYMid meet"
+                preserveAspectRatio="xMinYMin meet"
             >
                 {/* Grid lines */}
                 {[0, 25, 50, 75, 100].map(pct => {
                     const y = chartH - (chartH * pct / maxVal);
                     return (
                         <g key={pct}>
-                            <line x1="0" y1={y} x2={chartW} y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="0.4" />
-                            <text x="-1" y={y + 1} textAnchor="end" fontSize="3.5" fill="rgba(255,255,255,0.2)" fontWeight="700">
-                                {pct}
+                            <line x1="0" y1={y} x2={chartW} y2={y} stroke={isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"} strokeWidth="0.4" />
+                            <text x="-3" y={y + 1} textAnchor="end" fontSize="3" fill={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)"} fontWeight="700">
+                                {pct}%
                             </text>
                         </g>
                     );
@@ -32,61 +32,37 @@ const EfficiencyChart = ({ weeklyTaskData }) => {
                 {/* Bars */}
                 {weeklyTaskData.map((d, i) => {
                     const x = gap + i * (barW + gap);
-                    const barH = chartH * (d.efficiency / maxVal);
+                    const barH = Math.max(2, chartH * (d.efficiency / maxVal));
                     const y = chartH - barH;
                     const isToday = i === weeklyTaskData.length - 1;
 
                     return (
                         <g key={d.day}>
-                            {/* Background track */}
-                            <rect x={x} y={0} width={barW} height={chartH} rx="3" ry="3" fill="rgba(255,255,255,0.03)" />
+                            <rect x={x} y={0} width={barW} height={chartH} rx="2" ry="2" fill={isDark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)"} />
 
-                            {/* Value bar */}
                             <defs>
                                 <linearGradient id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={isToday ? '#818cf8' : '#6366f1'} stopOpacity="0.9" />
-                                    <stop offset="100%" stopColor={isToday ? '#60a5fa' : '#4338ca'} stopOpacity="0.6" />
+                                    <stop offset="0%" stopColor={isToday ? '#6366f1' : '#4f46e5'} />
+                                    <stop offset="100%" stopColor={isToday ? '#818cf8' : '#6366f1'} stopOpacity="0.8" />
                                 </linearGradient>
                             </defs>
                             <rect
                                 x={x} y={y}
                                 width={barW} height={barH}
-                                rx="3" ry="3"
+                                rx="2" ry="2"
                                 fill={`url(#bar-grad-${i})`}
-                                style={{ filter: isToday ? 'drop-shadow(0 0 4px rgba(99,102,241,0.6))' : 'none' }}
+                                className="transition-all duration-1000 ease-out"
+                                style={{ filter: isToday ? 'drop-shadow(0 4px 12px rgba(99,102,241,0.3))' : 'none' }}
                             />
 
-                            {/* Value label on top */}
-                            {d.efficiency > 0 && (
-                                <text
-                                    x={x + barW / 2} y={y - 2}
-                                    textAnchor="middle" fontSize="3.5"
-                                    fill={isToday ? '#a5b4fc' : 'rgba(255,255,255,0.4)'}
-                                    fontWeight="700"
-                                >
-                                    {d.efficiency}%
-                                </text>
-                            )}
-
-                            {/* Day label */}
                             <text
-                                x={x + barW / 2} y={chartH + 10}
+                                x={x + barW / 2} y={chartH + 12}
                                 textAnchor="middle" fontSize="4"
-                                fill={isToday ? '#a5b4fc' : 'rgba(255,255,255,0.3)'}
-                                fontWeight="900"
+                                fill={isToday ? '#6366f1' : isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)'}
+                                fontWeight="800"
                             >
                                 {d.day}
                             </text>
-                            {isToday && (
-                                <text
-                                    x={x + barW / 2} y={chartH + 16}
-                                    textAnchor="middle" fontSize="3"
-                                    fill="rgba(165,180,252,0.5)"
-                                    fontWeight="700"
-                                >
-                                    TODAY
-                                </text>
-                            )}
                         </g>
                     );
                 })}
@@ -96,116 +72,62 @@ const EfficiencyChart = ({ weeklyTaskData }) => {
 };
 
 // ── Sync Level Gauge ───────────────────────────────────────────────────────────
-const SyncLevelGauge = ({ syncLevel, taskPct, habitPct }) => {
-    const r = 80;
+const SyncLevelGauge = ({ syncLevel, isDark }) => {
+    const r = 85;
     const cx = 100;
     const cy = 100;
-    const circumference = Math.PI * r; // semi-circle
-    const arcLength = circumference;
-    const filled = arcLength * (syncLevel / 100);
+    const circumference = Math.PI * r;
+    const filled = circumference * (syncLevel / 100);
 
-    // color transitions: red → amber → indigo → emerald
-    const color = syncLevel < 30 ? '#ef4444' : syncLevel < 60 ? '#f59e0b' : syncLevel < 80 ? '#818cf8' : '#34d399';
+    const color = syncLevel < 30 ? '#ef4444' : syncLevel < 60 ? '#f59e0b' : syncLevel < 80 ? '#6366f1' : '#10b981';
 
     return (
-        <div className="flex flex-col items-center">
-            <svg viewBox="0 0 200 120" className="w-full max-w-[280px]">
-                {/* Background arc */}
-                <path
-                    d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.05)"
-                    strokeWidth="16"
-                    strokeLinecap="round"
-                />
-                {/* Value arc */}
-                <path
-                    d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth="16"
-                    strokeLinecap="round"
-                    strokeDasharray={`${filled} ${arcLength}`}
-                    style={{
-                        transition: 'stroke-dasharray 1.5s cubic-bezier(0, 0, 0.2, 1)',
-                        filter: `drop-shadow(0 0 8px ${color}80)`
-                    }}
-                />
-                {/* Center text */}
-                <text x={cx} y={cy - 8} textAnchor="middle" fontSize="32" fill="white" fontWeight="900" fontStyle="italic">
-                    {syncLevel}
-                </text>
-                <text x={cx} y={cy + 10} textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.3)" fontWeight="700" letterSpacing="3">
-                    SYNC LEVEL
-                </text>
-                {/* Tick marks */}
-                {[0, 25, 50, 75, 100].map(pct => {
-                    const angle = Math.PI * (1 - pct / 100);
-                    const tx = cx + r * Math.cos(angle);
-                    const ty = cy - r * Math.sin(angle);
-                    return (
-                        <circle key={pct} cx={tx} cy={ty} r="2" fill="rgba(255,255,255,0.15)" />
-                    );
-                })}
-            </svg>
-            {/* Breakdown */}
-            <div className="flex gap-6 mt-2">
-                <div className="text-center">
-                    <div className="text-lg font-black text-indigo-400 italic">{taskPct}%</div>
-                    <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Tasks</div>
-                </div>
-                <div className="w-px h-8 bg-white/10 self-center" />
-                <div className="text-center">
-                    <div className="text-lg font-black text-orange-400 italic">{habitPct}%</div>
-                    <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Habits</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// ── Weekly History Row ─────────────────────────────────────────────────────────
-const HistoryRow = ({ row, index }) => {
-    const isToday = index === 6;
-    return (
-        <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 ${isToday ? 'bg-indigo-500/10 border border-indigo-500/20' : 'hover:bg-white/[0.03] border border-transparent'}`}>
-            <div className={`text-[11px] font-black uppercase tracking-widest w-10 shrink-0 ${isToday ? 'text-indigo-400' : 'text-slate-500'}`}>
-                {row.day}
-                {isToday && <div className="text-[8px] text-indigo-500/70 tracking-wider">Today</div>}
-            </div>
-            <div className="flex-1 flex items-center gap-3">
-                {/* Task bar */}
-                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-gradient-to-r from-indigo-500 to-blue-400 rounded-full transition-all duration-700"
-                        style={{ width: `${row.efficiency}%` }}
+        <div className="flex flex-col items-center w-full">
+            <div className="relative w-full max-w-[220px]">
+                <svg viewBox="0 0 200 110" className="w-full">
+                    <path
+                        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                        fill="none"
+                        stroke={isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)"}
+                        strokeWidth="14"
+                        strokeLinecap="round"
                     />
-                </div>
-                <span className="text-[11px] font-black text-white italic w-10 text-right">{row.efficiency}%</span>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-                <div className="flex items-center gap-1.5">
-                    <CheckCircle2 size={10} className="text-indigo-400" />
-                    <span className="text-[10px] font-black text-slate-400">{row.completed}/{row.total}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <Flame size={10} className="text-orange-400" />
-                    <span className="text-[10px] font-black text-slate-400">{row.habitRate ?? 0}%</span>
-                </div>
+                    <path
+                        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="14"
+                        strokeLinecap="round"
+                        strokeDasharray={`${filled} ${circumference}`}
+                        style={{
+                            transition: 'stroke-dasharray 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                            filter: isDark ? `drop-shadow(0 0 12px ${color}40)` : 'none'
+                        }}
+                    />
+                    <text x={cx} y={cy - 5} textAnchor="middle" fontSize="32" fill={isDark ? "white" : "#0f172a"} fontWeight="900" fontStyle="italic">
+                        {syncLevel}%
+                    </text>
+                </svg>
             </div>
         </div>
     );
 };
+
 
 // ── Main Analytics Component ───────────────────────────────────────────────────
-const Analytics = ({ analytics }) => {
-    const { weeklyTaskData = [], weeklyHabitData = [], syncLevel = 0, taskPct = 0, habitPct = 0 } = analytics || {};
+const Analytics = ({ analytics, isDark }) => {
+    const {
+        weeklyTaskData = [],
+        weeklyHabitData = [],
+        syncLevel = 0,
+        taskPct = 0,
+        habitPct = 0
+    } = analytics || {};
 
-    // Merge habit rate into weeklyTaskData for history rows
     const historyRows = useMemo(() => weeklyTaskData.map((d, i) => ({
         ...d,
         habitRate: weeklyHabitData[i]?.rate ?? 0
-    })), [weeklyTaskData, weeklyHabitData]);
+    })).reverse(), [weeklyTaskData, weeklyHabitData]);
 
     const weekAvgEfficiency = useMemo(() => {
         if (!weeklyTaskData.length) return 0;
@@ -220,87 +142,124 @@ const Analytics = ({ analytics }) => {
     }, [weeklyTaskData]);
 
     return (
-        <div className="space-y-8 animate-precision-docking stagger-1">
-            {/* ── Header ────────────────────────────────────── */}
-            <div className="p-8 md:p-12 rounded-[40px] bg-white/[0.02] border border-white/10 backdrop-blur-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-cyan-500/5 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none" />
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                        {/* <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em]">Module 4 // Focus Meter</span> */}
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-white tracking-[-0.04em] italic uppercase">
-                        Analytics <span className="text-cyan-400">&amp; Insights</span>
-                    </h2>
-                    <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-2">
-                        Last 7 days · Live performance data
-                    </p>
-                </div>
-            </div>
-
-            {/* ── Main Grid ─────────────────────────────────── */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
-                {/* Sync Level Gauge */}
-                <div className="xl:col-span-4 p-6 md:p-8 rounded-[32px] bg-white/[0.02] border border-white/10 backdrop-blur-xl flex flex-col items-center justify-center gap-4 animate-precision-docking stagger-2">
-                    <div className="w-full flex items-center justify-between mb-2">
-                        <h3 className="text-[11px] font-black text-white uppercase tracking-widest italic">Sync Level</h3>
-                        <div className="flex items-center gap-1.5">
-                            <Zap size={10} className="text-cyan-400" />
-                            <span className="text-[9px] font-black text-cyan-400/60 uppercase tracking-widest">Live</span>
-                        </div>
-                    </div>
-                    <SyncLevelGauge syncLevel={syncLevel} taskPct={taskPct} habitPct={habitPct} />
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest text-center mt-2">
-                        Tasks × 0.6 + Habits × 0.4
-                    </p>
-                </div>
-
-                {/* Efficiency Bar Chart */}
-                <div className="xl:col-span-8 p-6 md:p-8 rounded-[32px] bg-white/[0.02] border border-white/10 backdrop-blur-xl animate-precision-docking stagger-3">
-                    <div className="flex items-center justify-between mb-6">
+        <div className="space-y-6 animate-precision-docking stagger-1 pb-12">
+            {/* ── Main Analytics Grid ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Performance Index & Unified Metrics */}
+                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group flex flex-col`}>
+                    <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-[11px] font-black text-white uppercase tracking-widest italic">Efficiency</h3>
-                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mt-0.5">Task completion rate per day</p>
+                            <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance Index</h3>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Synergy Engagement Report</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-center">
-                                <div className="text-xl font-black text-indigo-400 italic">{weekAvgEfficiency}%</div>
-                                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">7-day avg</div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col justify-center items-center">
+                        <SyncLevelGauge syncLevel={syncLevel} isDark={isDark} />
+
+                        <div className="grid grid-cols-5 gap-2 w-full mt-10 pt-8 border-t border-white/5 items-center">
+                            <div className="text-center group/item">
+                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-indigo-400 transition-colors">Avg Eff</div>
+                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{weekAvgEfficiency}%</div>
                             </div>
-                            <div className="text-center">
-                                <div className="text-xl font-black text-cyan-400 italic">{bestDay}</div>
-                                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Best day</div>
+                            <div className="w-px h-8 bg-white/5 mx-auto" />
+                            <div className="text-center group/item">
+                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-emerald-400 transition-colors">Peak</div>
+                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{bestDay}</div>
+                            </div>
+                            <div className="w-px h-8 bg-white/5 mx-auto" />
+                            <div className="text-center group/item">
+                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-orange-400 transition-colors">Consistency</div>
+                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{habitPct}%</div>
                             </div>
                         </div>
                     </div>
-                    <EfficiencyChart weeklyTaskData={weeklyTaskData.length ? weeklyTaskData : Array.from({ length: 7 }, (_, i) => ({
-                        day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][(new Date().getDay() - 6 + i + 7) % 7],
-                        efficiency: 0, completed: 0, total: 0
-                    }))} />
+                </div>
+
+                {/* Efficiency Engine */}
+                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden flex flex-col`}>
+                    <div className="mb-10">
+                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Efficiency Engine</h3>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Performance Trajectory</p>
+                    </div>
+
+                    <div className="flex-1 flex flex-col justify-center min-h-[300px]">
+                        <EfficiencyChart
+                            isDark={isDark}
+                            weeklyTaskData={weeklyTaskData.length ? weeklyTaskData : Array.from({ length: 7 }, (_, i) => ({
+                                day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][(new Date().getDay() - 6 + i + 7) % 7],
+                                efficiency: 0, completed: 0, total: 0
+                            }))}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* ── Weekly History Table ───────────────────────── */}
-            <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.02] border border-white/10 backdrop-blur-xl animate-precision-docking stagger-4">
-                <div className="flex items-center gap-3 mb-6">
-                    <Activity size={16} className="text-indigo-400" />
-                    <h3 className="text-[11px] font-black text-white uppercase tracking-widest italic">Weekly History</h3>
+            {/* ── Operational History ── */}
+            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden`}>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                            <Activity size={18} className="text-indigo-400" />
+                        </div>
+                        <div>
+                            <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Mission History</h3>
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Detailed Operational Logs</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
+                            <CheckCircle2 size={12} className="text-indigo-400" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tasks</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/5 border border-orange-500/10">
+                            <Flame size={12} className="text-orange-400" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Habits</span>
+                        </div>
+                    </div>
                 </div>
-                {/* Column headers */}
-                <div className="flex items-center gap-4 px-4 mb-3">
-                    <div className="text-[8px] font-black text-slate-700 uppercase tracking-widest w-10 shrink-0">Day</div>
-                    <div className="flex-1 text-[8px] font-black text-slate-700 uppercase tracking-widest">Task Efficiency</div>
-                    <div className="text-[8px] font-black text-slate-700 uppercase tracking-widest shrink-0 w-36 text-right">Tasks / Habits</div>
-                </div>
-                <div className="space-y-1">
-                    {historyRows.map((row, i) => (
-                        <HistoryRow key={row.day + i} row={row} index={i} />
-                    ))}
+
+                <div className="space-y-2">
+                    {historyRows.map((row, i) => {
+                        const isToday = i === 0;
+                        return (
+                            <div key={row.day + i} className={`group flex items-center gap-6 p-4 rounded-3xl border transition-all duration-300 ${isToday ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5'}`}>
+                                <div className="w-12 flex flex-col items-center">
+                                    <span className={`text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-400' : 'text-slate-500'}`}>{row.day}</span>
+                                    {isToday && <span className="text-[8px] font-black text-indigo-500/60 uppercase tracking-tighter">NOW</span>}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex justify-between items-center px-1">
+                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Task Efficiency</span>
+                                        <span className={`text-[11px] font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{row.efficiency}%</span>
+                                    </div>
+                                    <div className={`h-1.5 w-full ${isDark ? 'bg-white/5' : 'bg-slate-100'} rounded-full overflow-hidden`}>
+                                        <div
+                                            className="h-full bg-gradient-to-r from-indigo-600 to-cyan-400 rounded-full transition-all duration-1000"
+                                            style={{ width: `${row.efficiency}%` }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-48 flex justify-end gap-6 items-center">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Status</span>
+                                        <span className="text-[11px] font-black text-slate-400 italic">{row.completed}/{row.total} <small className="text-[8px] uppercase not-italic">Done</small></span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Habits</span>
+                                        <span className="text-[11px] font-black text-orange-400 italic">{row.habitRate}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+
                     {historyRows.length === 0 && (
-                        <div className="py-12 text-center">
-                            <TrendingUp size={32} className="text-slate-800 mx-auto mb-3" />
-                            <p className="text-[11px] font-black text-slate-600 uppercase tracking-widest">No data yet — complete tasks and habits to populate history</p>
+                        <div className="py-24 text-center border border-dashed border-white/5 rounded-[40px]">
+                            <LayoutGrid size={40} className="text-slate-800 mx-auto mb-4 opacity-20" />
+                            <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.3em]">Operational data stream offline</p>
+                            <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mt-2 italic">Awaiting first successful command execution</p>
                         </div>
                     )}
                 </div>

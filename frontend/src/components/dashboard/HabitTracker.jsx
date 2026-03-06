@@ -49,10 +49,19 @@ const HabitCard = ({ habit, onIncrement, onDelete, index }) => {
     const isDueToday = targetDays.includes(todayIndex);
 
     return (
-        <div className={`relative group p-6 rounded-[28px] bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 hover:bg-white/[0.06] hover:-translate-y-0.5 transition-all duration-500 backdrop-blur-md animate-precision-docking stagger-${(index % 8) + 2} overflow-hidden hover-glow`}>
-            {/* Done overlay glow */}
+        <div className={`relative group p-6 rounded-[28px] bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 hover:bg-white/[0.06] hover:-translate-y-0.5 transition-all duration-500 backdrop-blur-md animate-precision-docking stagger-${(index % 8) + 2} overflow-hidden hover-glow ${!isDueToday ? 'grayscale-[0.5] opacity-80' : ''}`}>
+            {/* Done overlay glow or Off Day overlay */}
             {isDone && (
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none rounded-[28px]" />
+            )}
+            {!isDueToday && (
+                <div className="absolute inset-0 bg-slate-900/60 pointer-events-none rounded-[28px] backdrop-blur-[2px] flex items-center justify-center z-20 transition-all duration-500">
+                    <div className="bg-slate-800/95 border border-white/20 px-6 py-3 rounded-2xl backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.4)] rotate-[-3deg] scale-110">
+                        <span className="text-[11px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                            <CalendarDays size={14} className="text-indigo-400" /> SYSTEM: OFF DAY
+                        </span>
+                    </div>
+                </div>
             )}
 
             {/* Top row */}
@@ -65,11 +74,6 @@ const HabitCard = ({ habit, onIncrement, onDelete, index }) => {
                         {isDone && (
                             <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                                 <CheckCircle2 size={8} /> COMPLETED
-                            </span>
-                        )}
-                        {!isDueToday && !isDone && (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-400 border border-slate-500/20 flex items-center gap-1">
-                                <CalendarDays size={8} /> OFF DAY
                             </span>
                         )}
                     </div>
@@ -95,8 +99,8 @@ const HabitCard = ({ habit, onIncrement, onDelete, index }) => {
                         <div
                             key={i}
                             className={`w-5 h-5 flex items-center justify-center rounded-full text-[8px] font-black transition-all ${isActive
-                                    ? isToday ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10 text-white'
-                                    : 'bg-white/[0.02] text-slate-600'
+                                ? isToday ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10 text-white'
+                                : 'bg-white/[0.02] text-slate-600'
                                 }`}
                         >
                             {day}
@@ -122,8 +126,8 @@ const HabitCard = ({ habit, onIncrement, onDelete, index }) => {
                         ${isDone
                             ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600 cursor-not-allowed'
                             : !isDueToday
-                                ? 'bg-slate-500/5 border-slate-500/20 text-slate-500 cursor-not-allowed'
-                                : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/25 hover:text-white active:scale-95 cursor-pointer'
+                                ? 'bg-slate-800/20 border-white/5 text-slate-500 cursor-not-allowed'
+                                : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/25 hover:text-white active:scale-95 cursor-pointer shadow-indigo-500/5'
                         }`}
                 >
                     {isDone ? (
@@ -198,7 +202,7 @@ const CreateForm = ({ onSubmit, onClose }) => {
                         onChange={e => setForm({ ...form, category: e.target.value })}
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-[13px] font-black text-white focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-300 cursor-pointer appearance-none"
                     >
-                        {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
+                        {CATEGORIES.map(c => <option key={c} value={c} className="bg-slate-900 text-white font-bold">{c}</option>)}
                     </select>
                 </div>
                 {/* Frequency */}
@@ -208,17 +212,31 @@ const CreateForm = ({ onSubmit, onClose }) => {
                         type="number"
                         min={1}
                         max={50}
-                        value={form.goalFrequency}
-                        onChange={e => setForm({ ...form, goalFrequency: Math.max(1, parseInt(e.target.value) || 1) })}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-[13px] font-black text-white focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-300"
+                        placeholder="Min 1"
+                        value={form.goalFrequency === '' ? '' : form.goalFrequency}
+                        onChange={e => {
+                            const val = e.target.value;
+                            if (val === '') {
+                                setForm({ ...form, goalFrequency: '' });
+                            } else {
+                                const parsed = parseInt(val);
+                                setForm({ ...form, goalFrequency: isNaN(parsed) ? '' : parsed });
+                            }
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-[13px] font-black text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-300"
                     />
                 </div>
             </div>
 
             {/* Target Days Selector */}
             <div className="mb-6">
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Active Days</label>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex justify-between items-center mb-3">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Schedule</label>
+                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                        {form.targetDays.length === 7 ? 'Every Day' : `${form.targetDays.length} Days / Week`}
+                    </span>
+                </div>
+                <div className="grid grid-cols-7 gap-2">
                     {DAYS_OF_WEEK.map((day, idx) => {
                         const isSelected = form.targetDays.includes(idx);
                         return (
@@ -226,12 +244,13 @@ const CreateForm = ({ onSubmit, onClose }) => {
                                 key={idx}
                                 type="button"
                                 onClick={() => toggleDay(idx)}
-                                className={`w-10 h-10 rounded-xl font-black text-[12px] transition-all duration-300 ${isSelected
-                                        ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]'
-                                        : 'bg-white/5 border border-white/10 text-slate-500 hover:bg-white/10 hover:text-slate-300'
+                                className={`h-12 rounded-xl font-black text-[12px] transition-all duration-300 flex flex-col items-center justify-center gap-1 border ${isSelected
+                                    ? 'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]'
+                                    : 'bg-white/5 border-white/10 text-slate-500 hover:bg-white/10 hover:text-slate-300'
                                     }`}
                             >
-                                {day}
+                                <span className="text-[10px]">{day}</span>
+                                {isSelected && <div className="w-1 h-1 rounded-full bg-white shadow-[0_0_5px_white]" />}
                             </button>
                         );
                     })}
@@ -241,14 +260,14 @@ const CreateForm = ({ onSubmit, onClose }) => {
             <div className="flex gap-3">
                 <button
                     type="submit"
-                    className="flex items-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer shadow-lg shadow-indigo-500/20"
                 >
-                    <Plus size={14} /> Create Habit
+                    <Plus size={14} /> Create Habit Strategy
                 </button>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
+                    className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
                 >
                     Cancel
                 </button>

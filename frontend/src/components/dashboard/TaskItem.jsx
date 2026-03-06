@@ -99,9 +99,16 @@ const TaskItem = ({ task, onToggleStatus, onDelete, staggerClass }) => {
                         {timeLeft}
                     </p>
                 </div>
-                <div className="hidden md:flex flex-col items-end mr-6">
-                    <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.3em]">Entry Log</p>
-                    <p className="text-[11px] text-slate-400 font-black tracking-tighter">{task.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                <div className="hidden md:flex flex-col items-end mr-6 min-w-[100px]">
+                    <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.3em]">
+                        {task.scheduledDate ? 'Strategic Op' : 'Entry Log'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-black tracking-tighter">
+                        {task.scheduledDate
+                            ? `${task.scheduledDate} ${task.startTime || ''}`.trim()
+                            : task.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        }
+                    </p>
                 </div>
                 <button
                     onClick={() => onDelete(task.id)}

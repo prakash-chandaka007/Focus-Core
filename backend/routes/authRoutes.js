@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const { register, login, forgotPassword, resetPassword } = require('../controllers/authController');
 const auth = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const Task = require('../models/Task');
@@ -9,6 +9,8 @@ const Habit = require('../models/Habit');
 // Public routes
 router.post('/register', register);
 router.post('/login', login);
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:resettoken', resetPassword);
 
 // Protected route (returns user data with dynamically calculated Gamification stats)
 router.get('/user', auth, async (req, res) => {

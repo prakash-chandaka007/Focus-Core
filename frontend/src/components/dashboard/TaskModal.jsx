@@ -60,6 +60,32 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Scheduled Date</label>
+                            <input
+                                type="date"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                                value={newTask.scheduledDate || ''}
+                                onChange={(e) => setNewTask({ ...newTask, scheduledDate: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Start Time</label>
+                            <div className="relative">
+                                <input
+                                    type="time"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none pr-12"
+                                    value={newTask.startTime || ''}
+                                    onChange={(e) => setNewTask({ ...newTask, startTime: e.target.value })}
+                                />
+                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                    <Clock size={16} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Mission Duration</label>
@@ -89,11 +115,23 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                             </div>
                         </div>
 
-                        {newTask.durationValue > 0 && (() => {
+                        {(newTask.durationValue > 0 || newTask.scheduledDate) && (() => {
                             const unit = newTask.durationUnit || 'minutes';
                             const multiplier = unit === 'days' ? 86400000 : unit === 'hours' ? 3600000 : 60000;
-                            const totalMs = newTask.durationValue * multiplier;
-                            const deadline = new Date(Date.now() + totalMs);
+                            const totalMs = (newTask.durationValue || 0) * multiplier;
+
+                            let baseTime = Date.now();
+                            if (newTask.scheduledDate) {
+                                baseTime = new Date(newTask.scheduledDate).getTime();
+                                if (newTask.startTime) {
+                                    const [h, m] = newTask.startTime.split(':');
+                                    const d = new Date(newTask.scheduledDate);
+                                    d.setHours(parseInt(h), parseInt(m));
+                                    baseTime = d.getTime();
+                                }
+                            }
+
+                            const deadline = new Date(baseTime + totalMs);
                             const isSameDay = deadline.toDateString() === new Date().toDateString();
                             const dateStr = isSameDay
                                 ? deadline.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -102,7 +140,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                                 <div className="flex items-center gap-3 px-5 py-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl animate-in slide-in-from-top-2 duration-300">
                                     <Clock size={14} className="text-indigo-400" />
                                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                                        Projected Deadline: {dateStr}
+                                        {newTask.durationValue > 0 ? `Projected Deadline: ${dateStr}` : `Starts at: ${dateStr}`}
                                     </span>
                                 </div>
                             );

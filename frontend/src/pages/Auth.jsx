@@ -14,33 +14,71 @@ import api from '../services/api'; // Corrected path based on your src structure
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const navigate = useNavigate(); // Initialize navigation
+  const [fieldErrors, setFieldErrors] = useState({ email: '' });
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: '' // This maps to 'username' in the backend
+    fullName: ''
   });
 
-  // Trigger entrance animation on mount
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    // Real-time validation for email
+    if (name === 'email') {
+      if (value && !validateEmail(value)) {
+        setFieldErrors(prev => ({ ...prev, email: 'Invalid Operator Identifier' }));
+      } else {
+        setFieldErrors(prev => ({ ...prev, email: '' }));
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateEmail(formData.email)) {
+      setFieldErrors(prev => ({ ...prev, email: 'Valid identity required for synchronization' }));
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
-    // CORRECTION: Map 'fullName' to 'username' so authController.js can read it
+    if (isForgot) {
+      try {
+        await api.post('/auth/forgot-password', { email: formData.email });
+        alert("Transmission Sent. If the identity exists in our core, a reset link has been dispatched.");
+        setIsForgot(false);
+      } catch (err) {
+        alert("Transmission Failed. Verification offline.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const authData = isLogin
       ? { email: formData.email, password: formData.password }
       : {
@@ -51,24 +89,15 @@ const Auth = () => {
 
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const res = await api.post(endpoint, authData); // Real API call
+      const res = await api.post(endpoint, authData);
 
-      // Store the JWT for future requests
       localStorage.setItem('token', res.data.token);
-
       console.log("Access Granted. Token Stored.");
-      navigate('/dashboard'); // Redirect to protected dashboard
+      navigate('/dashboard');
     } catch (err) {
-      // Error handling for backend responses
       const errorData = err.response?.data;
       const errorMsg = errorData?.msg || errorData?.message || errorData?.error || err.message || "System Access Denied";
-      console.error("Auth Error details:", err);
-
-      if (!err.response) {
-        alert("CRITICAL: Network Error. Is your backend server running on port 5000?");
-      } else {
-        alert(`System Error: ${errorMsg}`);
-      }
+      alert(`System Error: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -86,11 +115,14 @@ const Auth = () => {
 
       {/* BACK TO LANDING */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => {
+          if (isForgot) setIsForgot(false);
+          else navigate('/');
+        }}
         className={`absolute top-8 left-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition-all duration-700 group z-10 bg-transparent border-none cursor-pointer ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
       >
         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-        Return to Neutral
+        {isForgot ? 'Return to Authentication' : 'Return to Neutral'}
       </button>
 
       {/* AUTH CARD */}
@@ -103,19 +135,19 @@ const Auth = () => {
           </div>
           <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2 overflow-hidden animate-precision-docking stagger-2">
             <span>
-              {isLogin ? 'Operator Login' : 'System Enrollment'}
+              {isForgot ? 'Access Recovery' : isLogin ? 'Operator Login' : 'System Enrollment'}
             </span>
           </h1>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-precision-docking stagger-3">
-            {isLogin ? 'Access your performance enclave' : 'Initialize your productivity core'}
+            {isForgot ? 'Authorize credential override' : isLogin ? 'Access your performance enclave' : 'Initialize your productivity core'}
           </p>
         </div>
 
         <div className="bg-white/[0.03] border border-white/5 backdrop-blur-2xl rounded-[32px] p-8 md:p-10 shadow-2xl transition-all duration-500 overflow-hidden animate-precision-docking stagger-3">
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* NAME FIELD (Conditional with Animation) */}
-            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${!isLogin ? 'max-h-32 opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}`}>
+            {/* NAME FIELD (Conditional) */}
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${(!isLogin && !isForgot) ? 'max-h-32 opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}`}>
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Full Identity</label>
                 <div className="relative group">
@@ -127,7 +159,7 @@ const Auth = () => {
                     onChange={handleChange}
                     placeholder="E.G. JOHN DOE"
                     className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all uppercase tracking-wider"
-                    required={!isLogin}
+                    required={!isLogin && !isForgot}
                   />
                 </div>
               </div>
@@ -136,39 +168,51 @@ const Auth = () => {
             <div className="space-y-2 animate-precision-docking stagger-4">
               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Secure Email</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${fieldErrors.email ? 'text-red-500' : 'text-gray-600 group-focus-within:text-indigo-500'}`} size={18} />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="OPERATOR@FOCUSCORE.IO"
-                  className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all uppercase tracking-wider"
+                  className={`w-full bg-black/40 border rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:ring-1 outline-none transition-all uppercase tracking-wider ${fieldErrors.email ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/5 focus:border-indigo-500/50 focus:ring-indigo-500/20'}`}
                   required
                 />
               </div>
+              {fieldErrors.email && (
+                <p className="text-[8px] font-black uppercase tracking-widest text-red-500/80 ml-1 animate-pulse">
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
-            <div className="space-y-2 animate-precision-docking stagger-5">
-              <div className="flex justify-between">
-                <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Access Key</label>
-                {isLogin && (
-                  <button type="button" className="text-[8px] font-black uppercase tracking-widest text-indigo-500 hover:text-white transition-colors bg-transparent border-none cursor-pointer">
-                    Forgot?
-                  </button>
-                )}
-              </div>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••••••"
-                  className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
-                  required
-                />
+            {/* PASSWORD FIELD (Hidden on Forgot) */}
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${!isForgot ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="space-y-2 animate-precision-docking stagger-5">
+                <div className="flex justify-between">
+                  <label className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">Access Key</label>
+                  {isLogin && (
+                    <button
+                      onClick={() => setIsForgot(true)}
+                      type="button"
+                      className="text-[8px] font-black uppercase tracking-widest text-indigo-500 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••••••"
+                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                    required={!isForgot}
+                  />
+                </div>
               </div>
             </div>
 
@@ -178,7 +222,7 @@ const Auth = () => {
               className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-4 text-[11px] font-black uppercase tracking-[0.4em] transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer animate-precision-docking stagger-6"
             >
               <span className={`flex items-center justify-center gap-3 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
-                {isLogin ? 'Initialize Session' : 'Create Profile'}
+                {isForgot ? 'Request Reset' : isLogin ? 'Initialize Session' : 'Create Profile'}
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </span>
               {loading && (
@@ -190,17 +234,19 @@ const Auth = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-white/5 text-center animate-precision-docking stagger-7">
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
-              {isLogin ? "New to the system?" : "Already an operator?"}
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-indigo-500 hover:text-white transition-colors uppercase italic font-bold bg-transparent border-none cursor-pointer"
-              >
-                {isLogin ? 'Request Access' : 'Authenticate Now'}
-              </button>
-            </p>
-          </div>
+          {!isForgot && (
+            <div className="mt-8 pt-8 border-t border-white/5 text-center animate-precision-docking stagger-7">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
+                {isLogin ? "New to the system?" : "Already an operator?"}
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="ml-2 text-indigo-500 hover:text-white transition-colors uppercase italic font-bold bg-transparent border-none cursor-pointer"
+                >
+                  {isLogin ? 'Request Access' : 'Authenticate Now'}
+                </button>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* SECURITY INFO Staggered */}
