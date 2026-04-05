@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Activity, Zap, CheckCircle2, Flame, BarChart3, PieChart, LayoutGrid, BrainCircuit } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Zap, CheckCircle2, Flame, BarChart3, PieChart, LayoutGrid, BrainCircuit, Star, Target, ShieldCheck } from 'lucide-react';
 
 // ── SVG Bar Chart ──────────────────────────────────────────────────────────────
 const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
@@ -289,6 +289,77 @@ const Analytics = ({ analytics, isDark }) => {
                         </div>
                     </div>
 
+                </div>
+            </div>
+            
+            {/* ── Gamification HUB ── */}
+            <div className={`p-4 md:p-6 xl:p-8 rounded-[24px] md:rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group`}>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[80px] rounded-full -mr-20 -mt-20 group-hover:bg-yellow-500/10 transition-colors duration-700"></div>
+                
+                <div className="flex flex-col lg:flex-row items-center gap-8 relative z-10">
+                    {/* Rank Badge */}
+                    <div className="relative shrink-0">
+                        <div className={`w-32 h-32 md:w-40 md:h-40 rounded-[32px] md:rounded-[40px] flex items-center justify-center border-2 rotate-3 group-hover:rotate-6 transition-all duration-700 ${
+                            isDark ? 'bg-yellow-500/10 border-yellow-500/20 shadow-[0_0_40px_rgba(234,179,8,0.1)]' : 'bg-yellow-50 border-yellow-200 shadow-lg'
+                        }`}>
+                            <div className="flex flex-col items-center">
+                                <Star size={48} className="text-yellow-500 animate-pulse mb-2" fill="currentColor" />
+                                <span className={`text-3xl md:text-4xl font-black italic uppercase tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>{analytics.level || 1}</span>
+                            </div>
+                        </div>
+                        <div className="absolute -bottom-2 -left-2 px-4 py-1.5 bg-yellow-500 text-black text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transform -rotate-3">
+                            Rank {analytics.levelTitle || 'Novice'}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 w-full flex flex-col justify-center">
+                        <div className="flex justify-between items-end mb-4">
+                            <div>
+                                <h3 className={`text-lg md:text-xl font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Operator Progression</h3>
+                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Synergy XP Protocol</p>
+                            </div>
+                            <div className="text-right">
+                                <span className={`text-2xl font-black italic ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`}>XP {analytics.totalXP || 0}</span>
+                            </div>
+                        </div>
+
+                        {analytics.xpProgress && (
+                            <div className="space-y-3">
+                                <div className={`h-4 w-full ${isDark ? 'bg-white/5' : 'bg-slate-100'} rounded-2xl overflow-hidden border border-white/5 p-1`}>
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-500 rounded-xl relative transition-all duration-1000 animate-gradient-shift bg-[length:200%_auto]"
+                                        style={{ width: `${analytics.xpProgress.percent}%` }}
+                                    >
+                                        <div className="absolute inset-x-0 bottom-0 h-[2px] bg-white/20 blur-[1px]"></div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center px-1">
+                                    <div className="flex items-center gap-2">
+                                        <Target size={12} className="text-slate-500" />
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Next Target: <span className="text-yellow-500">{analytics.xpProgress.nextThreshold} XP</span></span>
+                                    </div>
+                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{analytics.xpProgress.percent}% Sync</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
+                            {[
+                                { icon: <CheckCircle2 size={14} />, label: 'Tasks', value: `${analytics.totalXP ? Math.round(analytics.totalXP * 0.4) : 0}`, color: 'text-indigo-400' },
+                                { icon: <Flame size={14} />, label: 'Habits', value: `${analytics.totalXP ? Math.round(analytics.totalXP * 0.6) : 0}`, color: 'text-orange-400' },
+                                { icon: <ShieldCheck size={14} />, label: 'Consistency', value: 'High', color: 'text-emerald-400' },
+                                { icon: <Zap size={14} />, label: 'Pulse', value: 'Active', color: 'text-yellow-400' },
+                            ].map((item, i) => (
+                                <div key={i} className={`p-3 rounded-2xl border ${isDark ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-100'} flex items-center gap-3`}>
+                                    <div className={`${item.color}`}>{item.icon}</div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+                                        <span className={`text-[10px] font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
 

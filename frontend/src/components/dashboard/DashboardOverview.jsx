@@ -22,8 +22,29 @@ const StatBox = ({ icon, label, value, color, staggerClass }) => (
         <div>
             <div className="flex justify-between items-baseline mb-0.5">
                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] group-hover/stat:text-white transition-colors duration-300">{label}</p>
+                {label === 'Level' && (
+                    <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest animate-pulse">
+                        {value.title || 'Novice'}
+                    </span>
+                )}
             </div>
-            <p className="text-xl font-black text-white tracking-tight italic uppercase group-hover/stat:scale-105 origin-left transition-transform duration-500">{value}</p>
+            <p className="text-xl font-black text-white tracking-tight italic uppercase group-hover/stat:scale-105 origin-left transition-transform duration-500">
+                {typeof value === 'object' ? value.level : value}
+            </p>
+            {label === 'Level' && value.xpProgress && (
+                <div className="mt-2 space-y-1">
+                    <div className="flex justify-between text-[6px] font-black uppercase tracking-tighter text-slate-500">
+                        <span>XP {value.xpProgress.current}</span>
+                        <span>{value.xpProgress.required - value.xpProgress.current} to go</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <div 
+                            className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-1000"
+                            style={{ width: `${value.xpProgress.percent}%` }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     </div>
 );
@@ -75,7 +96,17 @@ const DashboardOverview = ({ userStats, habits = [] }) => {
                         <StatBox icon={<ListTodo size={20} />} label="Total Tasks" value={userStats.totalTasksDone} color="text-indigo-400" staggerClass="stagger-3" />
                         <StatBox icon={<Flame size={20} />} label="Streak" value={`${userStats.currentStreak} Days`} color="text-orange-400" staggerClass="stagger-4" />
                         <StatBox icon={<Activity size={20} />} label="Habit Rate" value={`${habitRate}%`} color="text-blue-400" staggerClass="stagger-5" />
-                        <StatBox icon={<Star size={20} />} label="Level" value={userStats.userLevel} color="text-yellow-400" staggerClass="stagger-6" />
+                        <StatBox 
+                            icon={<Star size={20} />} 
+                            label="Level" 
+                            value={{ 
+                                level: userStats.level, 
+                                title: userStats.levelTitle, 
+                                xpProgress: userStats.xpProgress 
+                            }} 
+                            color="text-yellow-400" 
+                            staggerClass="stagger-6" 
+                        />
                     </div>
                 </div>
             </div>

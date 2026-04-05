@@ -57,16 +57,44 @@ router.get('/user', auth, async (req, res) => {
         // Calculate XP and dynamic Level Title
         const totalLogs = habits.reduce((acc, h) => acc + h.logs.length, 0);
         const totalXP = (tasks.length * 10) + (totalLogs * 15);
+        
         let levelTitle = 'Novice';
-        if (totalXP >= 100) levelTitle = 'Initiate';
-        if (totalXP >= 250) levelTitle = 'Adept';
-        if (totalXP >= 500) levelTitle = 'Pro';
-        if (totalXP >= 1000) levelTitle = 'Master';
+        let nextLevelXP = 100;
+        let currentLevelBaseXP = 0;
+
+        if (totalXP >= 1000) {
+            levelTitle = 'Master';
+            nextLevelXP = 2500; 
+            currentLevelBaseXP = 1000;
+        } else if (totalXP >= 500) {
+            levelTitle = 'Pro';
+            nextLevelXP = 1000;
+            currentLevelBaseXP = 500;
+        } else if (totalXP >= 250) {
+            levelTitle = 'Adept';
+            nextLevelXP = 500;
+            currentLevelBaseXP = 250;
+        } else if (totalXP >= 100) {
+            levelTitle = 'Initiate';
+            nextLevelXP = 250;
+            currentLevelBaseXP = 100;
+        }
+
+        const xpTowardNextLevel = totalXP - currentLevelBaseXP;
+        const xpRequiredForLevel = nextLevelXP - currentLevelBaseXP;
+        const progressPercentage = Math.min(Math.round((xpTowardNextLevel / xpRequiredForLevel) * 100), 100);
 
         // Override user object properties with analytics results
         const userObj = user.toObject();
         userObj.currentStreak = currentStreak;
         userObj.levelTitle = levelTitle;
+        userObj.totalXP = totalXP;
+        userObj.xpProgress = {
+            current: xpTowardNextLevel,
+            required: xpRequiredForLevel,
+            percent: progressPercentage,
+            nextThreshold: nextLevelXP
+        };
 
         res.json(userObj);
     } catch (err) {
