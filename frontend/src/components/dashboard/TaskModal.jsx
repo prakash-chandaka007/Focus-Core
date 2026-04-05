@@ -5,26 +5,26 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
     if (!isModalOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-6 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-            <div className="relative w-full max-w-xl bg-[#0a0a0c] border border-white/10 rounded-[40px] p-10 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
+            <div className="relative w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-[24px] lg:rounded-[32px] p-6 lg:p-8 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-500/10 blur-[100px] -mr-32 -mt-32"></div>
 
-                <div className="flex items-center justify-between mb-10 relative z-10">
-                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">New Task Initialization</h3>
+                <div className="flex items-center justify-between mb-6 lg:mb-8 relative z-10">
+                    <h3 className="text-xl lg:text-2xl font-black text-white italic uppercase tracking-tighter">New Task Initialization</h3>
                     <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-500 hover:text-white transition-colors bg-transparent border-none cursor-pointer">
                         <X size={24} />
                     </button>
                 </div>
 
-                <form onSubmit={addTask} className="space-y-8 relative z-10">
+                <form onSubmit={addTask} className="space-y-4 lg:space-y-6 relative z-10">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Objective</label>
                         <input
                             autoFocus
                             type="text"
                             placeholder="E.g., Complete UI Mockups"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
                             value={newTask.title}
                             onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                         />
@@ -36,7 +36,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                             <input
                                 type="text"
                                 placeholder="Alpha / Beta / Gamma"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
                                 value={newTask.category}
                                 onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
                             />
@@ -45,7 +45,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Threat Level</label>
                             <div className="relative">
                                 <select
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer pr-12"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer pr-10"
                                     value={newTask.priority}
                                     onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
                                 >
@@ -65,7 +65,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Scheduled Date</label>
                             <input
                                 type="date"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                                 value={newTask.scheduledDate || ''}
                                 onChange={(e) => setNewTask({ ...newTask, scheduledDate: e.target.value })}
                             />
@@ -75,7 +75,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                             <div className="relative">
                                 <input
                                     type="time"
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none pr-12"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none pr-10"
                                     value={newTask.startTime || ''}
                                     onChange={(e) => setNewTask({ ...newTask, startTime: e.target.value })}
                                 />
@@ -94,13 +94,13 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
                                     type="number"
                                     min="1"
                                     placeholder="Amount"
-                                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
+                                    className="flex-1 bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl p-3 lg:p-4 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-700"
                                     value={newTask.durationValue || ''}
                                     onChange={(e) => setNewTask({ ...newTask, durationValue: parseInt(e.target.value) || 0 })}
                                 />
                                 <div className="relative">
                                     <select
-                                        className="h-full bg-white/5 border border-white/10 rounded-2xl px-5 pr-10 text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer"
+                                        className="h-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl px-3 lg:px-4 pr-8 text-sm lg:text-base text-white font-bold italic focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer"
                                         value={newTask.durationUnit || 'minutes'}
                                         onChange={(e) => setNewTask({ ...newTask, durationUnit: e.target.value })}
                                     >
@@ -149,7 +149,7 @@ const TaskModal = ({ isModalOpen, setIsModalOpen, addTask, newTask, setNewTask }
 
                     <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-[0.15em] shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 transform hover:-translate-y-1 transition-all border-none cursor-pointer flex items-center justify-center gap-3"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black uppercase tracking-[0.15em] shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 transform hover:-translate-y-1 transition-all border-none cursor-pointer flex items-center justify-center gap-2"
                     >
                         <span className="italic">Authorize Directive</span>
                     </button>

@@ -57,21 +57,21 @@ const DashboardOverview = ({ userStats, habits = [] }) => {
     return (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             {/* ── Daily Completion Arc ───────────────── */}
-            <div className="xl:col-span-8 bg-white/[0.03] border border-white/10 rounded-[32px] md:rounded-[48px] p-6 md:p-12 relative overflow-hidden group backdrop-blur-2xl animate-precision-docking stagger-1">
+            <div className="xl:col-span-8 bg-white/[0.03] border border-white/10 rounded-[24px] md:rounded-[32px] p-6 lg:p-8 relative overflow-hidden group backdrop-blur-2xl animate-precision-docking stagger-1">
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full -mr-40 -mt-40"></div>
-                <h3 className="text-3xl font-black text-white tracking-tighter mb-14 italic uppercase relative z-10 animate-precision-docking stagger-2">Daily Completion</h3>
-                <div className="flex flex-col lg:flex-row items-center gap-16 relative z-10">
-                    <div className="relative w-56 h-56 flex items-center justify-center">
+                <h3 className="text-2xl lg:text-3xl font-black text-white tracking-tighter mb-8 italic uppercase relative z-10 animate-precision-docking stagger-2">Daily Completion</h3>
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative z-10">
+                    <div className="relative w-48 h-48 flex items-center justify-center">
                         <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]">
                             <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="14" fill="transparent" className="text-white/[0.04]" />
                             <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="14" fill="transparent" strokeDasharray={628} strokeDashoffset={628 - (628 * (userStats.dailyCompletion / 100))} strokeLinecap="round" className="text-indigo-500 transition-all duration-[1500ms] ease-out" />
                         </svg>
                         <div className="text-center animate-precision-docking stagger-3">
-                            <span className="text-5xl md:text-6xl font-black text-white tracking-tighter italic">{userStats.dailyCompletion}</span>
+                            <span className="text-4xl md:text-5xl font-black text-white tracking-tighter italic">{userStats.dailyCompletion}</span>
                             <p className="text-[11px] font-black text-indigo-400 uppercase tracking-widest mt-1">% Done</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 flex-1 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 flex-1 w-full">
                         <StatBox icon={<ListTodo size={20} />} label="Total Tasks" value={userStats.totalTasksDone} color="text-indigo-400" staggerClass="stagger-3" />
                         <StatBox icon={<Flame size={20} />} label="Streak" value={`${userStats.currentStreak} Days`} color="text-orange-400" staggerClass="stagger-4" />
                         <StatBox icon={<Activity size={20} />} label="Habit Rate" value={`${habitRate}%`} color="text-blue-400" staggerClass="stagger-5" />
@@ -81,8 +81,8 @@ const DashboardOverview = ({ userStats, habits = [] }) => {
             </div>
 
             {/* ── Current Habits Panel ───────────────── */}
-            <div className="xl:col-span-4 bg-white/[0.02] border border-white/10 rounded-[32px] md:rounded-[48px] p-6 md:p-10 flex flex-col backdrop-blur-3xl animate-precision-docking stagger-2 relative overflow-hidden">
-                <h4 className="text-2xl font-black text-white mb-8 tracking-tight italic uppercase animate-precision-docking stagger-3">Current Habits</h4>
+            <div className="xl:col-span-4 bg-white/[0.02] border border-white/10 rounded-[24px] md:rounded-[32px] p-6 lg:p-8 flex flex-col backdrop-blur-3xl animate-precision-docking stagger-2 relative overflow-hidden">
+                <h4 className="text-xl lg:text-2xl font-black text-white mb-6 lg:mb-8 tracking-tight italic uppercase animate-precision-docking stagger-3">Current Habits</h4>
 
                 <div className="space-y-4 mb-10 flex-1">
                     {displayHabits.length > 0 ? (

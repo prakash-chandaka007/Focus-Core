@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
-import { TrendingUp, Activity, Zap, CheckCircle2, Flame, BarChart3, PieChart, LayoutGrid } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { TrendingUp, TrendingDown, Activity, Zap, CheckCircle2, Flame, BarChart3, PieChart, LayoutGrid, BrainCircuit } from 'lucide-react';
 
 // ── SVG Bar Chart ──────────────────────────────────────────────────────────────
 const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
+    const [hoverIdx, setHoverIdx] = useState(null);
     const maxVal = 100;
     const chartH = 120;
     const chartW = 100;
@@ -10,9 +11,9 @@ const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
     const gap = (chartW - weeklyTaskData.length * barW) / (weeklyTaskData.length + 1);
 
     return (
-        <div className="w-full h-full flex items-end">
+        <div className="w-full h-full flex items-end relative">
             <svg
-                viewBox={`-12 -10 ${chartW + 15} ${chartH + 35}`}
+                viewBox={`-12 -20 ${chartW + 15} ${chartH + 45}`}
                 className="w-full overflow-visible"
                 preserveAspectRatio="xMinYMin meet"
             >
@@ -35,15 +36,22 @@ const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
                     const barH = Math.max(2, chartH * (d.efficiency / maxVal));
                     const y = chartH - barH;
                     const isToday = i === weeklyTaskData.length - 1;
+                    const isHovered = hoverIdx === i;
 
                     return (
-                        <g key={d.day}>
+                        <g 
+                            key={d.day + i} 
+                            onMouseEnter={() => setHoverIdx(i)} 
+                            onMouseLeave={() => setHoverIdx(null)}
+                            className="transition-opacity duration-300 cursor-crosshair"
+                            style={{ opacity: hoverIdx !== null && !isHovered ? 0.3 : 1 }}
+                        >
                             <rect x={x} y={0} width={barW} height={chartH} rx="2" ry="2" fill={isDark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)"} />
 
                             <defs>
                                 <linearGradient id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={isToday ? '#6366f1' : '#4f46e5'} />
-                                    <stop offset="100%" stopColor={isToday ? '#818cf8' : '#6366f1'} stopOpacity="0.8" />
+                                    <stop offset="0%" stopColor={isToday || isHovered ? '#6366f1' : '#4f46e5'} />
+                                    <stop offset="100%" stopColor={isToday || isHovered ? '#818cf8' : '#6366f1'} stopOpacity="0.8" />
                                 </linearGradient>
                             </defs>
                             <rect
@@ -51,18 +59,46 @@ const EfficiencyChart = ({ weeklyTaskData, isDark }) => {
                                 width={barW} height={barH}
                                 rx="2" ry="2"
                                 fill={`url(#bar-grad-${i})`}
-                                className="transition-all duration-1000 ease-out"
-                                style={{ filter: isToday ? 'drop-shadow(0 4px 12px rgba(99,102,241,0.3))' : 'none' }}
+                                className="transition-all duration-300 ease-out"
+                                style={{ filter: isToday || isHovered ? 'drop-shadow(0 4px 12px rgba(99,102,241,0.3))' : 'none' }}
                             />
 
                             <text
                                 x={x + barW / 2} y={chartH + 12}
                                 textAnchor="middle" fontSize="4"
-                                fill={isToday ? '#6366f1' : isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)'}
+                                fill={isToday || isHovered ? '#6366f1' : isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)'}
                                 fontWeight="800"
                             >
                                 {d.day}
                             </text>
+
+                            {/* Tooltip Overlay inside SVG */}
+                            {isHovered && (
+                                <g className="animate-in fade-in zoom-in duration-200">
+                                    <rect 
+                                        x={x + barW/2 - 14} 
+                                        y={y - 12} 
+                                        width={28} 
+                                        height={9} 
+                                        rx="1.5" 
+                                        fill={isDark ? "white" : "#0f172a"} 
+                                    />
+                                    <polygon 
+                                        points={`${x + barW/2},${y - 3} ${x + barW/2 - 2},${y - 12} ${x + barW/2 + 2},${y - 12}`} 
+                                        fill={isDark ? "white" : "#0f172a"}
+                                    />
+                                    <text 
+                                        x={x + barW/2} 
+                                        y={y - 6.5} 
+                                        textAnchor="middle" 
+                                        fontSize="3.5" 
+                                        fill={isDark ? "black" : "white"} 
+                                        fontWeight="900"
+                                    >
+                                        {d.completed}/{d.total}
+                                    </text>
+                                </g>
+                            )}
                         </g>
                     );
                 })}
@@ -83,7 +119,7 @@ const SyncLevelGauge = ({ syncLevel, isDark }) => {
 
     return (
         <div className="flex flex-col items-center w-full">
-            <div className="relative w-full max-w-[220px]">
+            <div className="relative w-full max-w-[180px] xl:max-w-[220px]">
                 <svg viewBox="0 0 200 110" className="w-full">
                     <path
                         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
@@ -141,81 +177,142 @@ const Analytics = ({ analytics, isDark }) => {
         return best.efficiency > 0 ? best.day : '–';
     }, [weeklyTaskData]);
 
+    // Trend Calculations
+    const trends = useMemo(() => {
+        if (historyRows.length < 2) return { eff: 0, habit: 0 };
+        return {
+            eff: Math.round((historyRows[0]?.efficiency || 0) - (historyRows[1]?.efficiency || 0)),
+            habit: Math.round((historyRows[0]?.habitRate || 0) - (historyRows[1]?.habitRate || 0))
+        };
+    }, [historyRows]);
+
+    // AI Insight Generator
+    const insightText = useMemo(() => {
+        let perfectStreak = 0;
+        for (let r of historyRows) {
+            if (r.habitRate >= 90) perfectStreak++;
+            else break;
+        }
+
+        if (perfectStreak > 2) return `Operational excellence. Maintained a ${perfectStreak}-day optimal habit adherence streak.`;
+        if (trends.eff > 15) return `Sharp tactical improvement detected (+${trends.eff}% efficiency from yesterday).`;
+        if (trends.habit < -20) return `Habit protocol slippage detected. Re-calibrate and re-engage today.`;
+        if (syncLevel >= 80) return `Systems fully synchronized. Operational output is highly stabilized.`;
+        if (bestDay !== '–') return `Historical data indicates ${bestDay}s yield maximum operational output.`;
+        
+        return `Gathering tactical telemetry to generate performance insights.`;
+    }, [historyRows, trends, syncLevel, bestDay]);
+
     return (
         <div className="space-y-6 animate-precision-docking stagger-1 pb-12">
             {/* ── Main Analytics Grid ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
+                
                 {/* Performance Index & Unified Metrics */}
-                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group flex flex-col`}>
-                    <div className="flex items-center justify-between mb-8">
+                <div className={`p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group flex flex-col`}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
                         <div>
-                            <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance Index</h3>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Synergy Engagement Report</p>
+                            <h3 className={`text-base xl:text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance Index</h3>
+                            <p className="text-[9px] xl:text-[10px] font-black text-slate-500 uppercase tracking-widest">Synergy Engagement Report</p>
                         </div>
                     </div>
 
                     <div className="flex-1 flex flex-col justify-center items-center">
                         <SyncLevelGauge syncLevel={syncLevel} isDark={isDark} />
 
-                        <div className="grid grid-cols-5 gap-2 w-full mt-10 pt-8 border-t border-white/5 items-center">
-                            <div className="text-center group/item">
-                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-indigo-400 transition-colors">Avg Eff</div>
-                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{weekAvgEfficiency}%</div>
+                        <div className="grid grid-cols-3 gap-2 w-full mt-6 xl:mt-10 pt-6 xl:pt-8 border-t border-white/5 items-start">
+                            
+                            <div className="text-center group/item flex flex-col items-center">
+                                <div className="text-[8px] xl:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-indigo-400 transition-colors">Avg Eff</div>
+                                <div className={`text-base xl:text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{weekAvgEfficiency}%</div>
+                                {trends.eff !== 0 && (
+                                    <div className={`flex items-center gap-0.5 mt-1 text-[9px] font-black italic ${trends.eff > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {trends.eff > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                                        {Math.abs(trends.eff)}%
+                                    </div>
+                                )}
                             </div>
-                            <div className="w-px h-8 bg-white/5 mx-auto" />
-                            <div className="text-center group/item">
-                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-emerald-400 transition-colors">Peak</div>
-                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{bestDay}</div>
+                            
+                            <div className="text-center group/item flex flex-col items-center relative">
+                                <div className="absolute -left-1/2 w-px h-8 bg-black/5 dark:bg-white/5 top-2" />
+                                <div className="text-[8px] xl:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-emerald-400 transition-colors">Peak</div>
+                                <div className={`text-base xl:text-lg font-black italic uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>{bestDay}</div>
+                                <div className="absolute -right-1/2 w-px h-8 bg-black/5 dark:bg-white/5 top-2" />
                             </div>
-                            <div className="w-px h-8 bg-white/5 mx-auto" />
-                            <div className="text-center group/item">
-                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-orange-400 transition-colors">Consistency</div>
-                                <div className={`text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{habitPct}%</div>
+                            
+                            <div className="text-center group/item flex flex-col items-center">
+                                <div className="text-[8px] xl:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/item:text-orange-400 transition-colors">Habits</div>
+                                <div className={`text-base xl:text-lg font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{habitPct}%</div>
+                                {trends.habit !== 0 && (
+                                    <div className={`flex items-center gap-0.5 mt-1 text-[9px] font-black italic ${trends.habit > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {trends.habit > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                                        {Math.abs(trends.habit)}%
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     </div>
                 </div>
 
-                {/* Efficiency Engine */}
-                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden flex flex-col`}>
-                    <div className="mb-10">
-                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Efficiency Engine</h3>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Performance Trajectory</p>
+                {/* Efficiency Engine & Insights Stack */}
+                <div className="flex flex-col gap-4 xl:gap-6 h-full">
+                    
+                    {/* Insights Box */}
+                    <div className={`p-4 xl:p-6 rounded-[24px] xl:rounded-[30px] border ${isDark ? 'bg-indigo-500/5 border-indigo-500/10' : 'bg-indigo-50 border-indigo-100 shadow-sm'} flex items-start gap-4`}>
+                        <div className={`shrink-0 w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white shadow-md'}`}>
+                            <BrainCircuit size={16} />
+                        </div>
+                        <div>
+                            <h4 className={`text-[10px] xl:text-xs font-black uppercase tracking-widest mb-1 ${isDark ? 'text-indigo-400' : 'text-indigo-700'}`}>Tactical AI Insight</h4>
+                            <p className={`text-xs xl:text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} leading-snug`}>
+                                {insightText}
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col justify-center min-h-[300px]">
-                        <EfficiencyChart
-                            isDark={isDark}
-                            weeklyTaskData={weeklyTaskData.length ? weeklyTaskData : Array.from({ length: 7 }, (_, i) => ({
-                                day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][(new Date().getDay() - 6 + i + 7) % 7],
-                                efficiency: 0, completed: 0, total: 0
-                            }))}
-                        />
+                    {/* Chart */}
+                    <div className={`flex-1 p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden flex flex-col`}>
+                        <div className="mb-6 xl:mb-10">
+                            <h3 className={`text-base xl:text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Efficiency Engine</h3>
+                            <p className="text-[9px] xl:text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Trajectory</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col justify-center min-h-[200px] xl:min-h-[250px]">
+                            <EfficiencyChart
+                                isDark={isDark}
+                                weeklyTaskData={weeklyTaskData.length ? weeklyTaskData : Array.from({ length: 7 }, (_, i) => ({
+                                    day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][(new Date().getDay() - 6 + i + 7) % 7],
+                                    efficiency: 0, completed: 0, total: 0
+                                }))}
+                            />
+                        </div>
                     </div>
+
                 </div>
             </div>
 
             {/* ── Operational History ── */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden`}>
-                <div className="flex items-center justify-between mb-8">
+            <div className={`p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden`}>
+                <div className="flex items-center justify-between mb-6 xl:mb-8">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                            <Activity size={18} className="text-indigo-400" />
+                        <div className={`w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/5 border-white/10 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}>
+                            <Activity size={16} />
                         </div>
                         <div>
-                            <h3 className={`text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Mission History</h3>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Detailed Operational Logs</p>
+                            <h3 className={`text-base xl:text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Mission History</h3>
+                            <p className="text-[8px] xl:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Detailed Operational Logs</p>
                         </div>
                     </div>
 
                     <div className="flex gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
-                            <CheckCircle2 size={12} className="text-indigo-400" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tasks</span>
+                        <div className={`flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-1 xl:py-1.5 rounded-lg border ${isDark ? 'bg-indigo-500/5 border-indigo-500/10' : 'bg-indigo-50 border-indigo-200'}`}>
+                            <CheckCircle2 size={10} className="text-indigo-400 xl:text-[12px]" />
+                            <span className="text-[9px] xl:text-[10px] font-black text-slate-500 uppercase tracking-widest hidden sm:block">Tasks</span>
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/5 border border-orange-500/10">
-                            <Flame size={12} className="text-orange-400" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Habits</span>
+                        <div className={`flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-1 xl:py-1.5 rounded-lg border ${isDark ? 'bg-orange-500/5 border-orange-500/10' : 'bg-orange-50 border-orange-200'}`}>
+                            <Flame size={10} className="text-orange-400 xl:text-[12px]" />
+                            <span className="text-[9px] xl:text-[10px] font-black text-slate-500 uppercase tracking-widest hidden sm:block">Habits</span>
                         </div>
                     </div>
                 </div>
@@ -224,15 +321,15 @@ const Analytics = ({ analytics, isDark }) => {
                     {historyRows.map((row, i) => {
                         const isToday = i === 0;
                         return (
-                            <div key={row.day + i} className={`group flex items-center gap-6 p-4 rounded-3xl border transition-all duration-300 ${isToday ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5'}`}>
-                                <div className="w-12 flex flex-col items-center">
-                                    <span className={`text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-400' : 'text-slate-500'}`}>{row.day}</span>
-                                    {isToday && <span className="text-[8px] font-black text-indigo-500/60 uppercase tracking-tighter">NOW</span>}
+                            <div key={row.day + i} className={`group flex flex-col sm:flex-row sm:items-center gap-4 xl:gap-6 p-4 rounded-3xl border transition-all duration-300 ${isToday ? (isDark ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-200') : (isDark ? 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5' : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-200')}`}>
+                                <div className="w-full sm:w-12 flex flex-row sm:flex-col items-center justify-between sm:justify-center">
+                                    <span className={`text-[11px] xl:text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-500' : 'text-slate-500'}`}>{row.day}</span>
+                                    {isToday && <span className="text-[8px] font-black text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">NOW</span>}
                                 </div>
                                 <div className="flex-1 space-y-2">
                                     <div className="flex justify-between items-center px-1">
-                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Task Efficiency</span>
-                                        <span className={`text-[11px] font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{row.efficiency}%</span>
+                                        <span className="text-[8px] xl:text-[9px] font-black text-slate-600 uppercase tracking-widest">Task Efficiency</span>
+                                        <span className={`text-[10px] xl:text-[11px] font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{row.efficiency}%</span>
                                     </div>
                                     <div className={`h-1.5 w-full ${isDark ? 'bg-white/5' : 'bg-slate-100'} rounded-full overflow-hidden`}>
                                         <div
@@ -241,14 +338,14 @@ const Analytics = ({ analytics, isDark }) => {
                                         />
                                     </div>
                                 </div>
-                                <div className="w-48 flex justify-end gap-6 items-center">
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Status</span>
-                                        <span className="text-[11px] font-black text-slate-400 italic">{row.completed}/{row.total} <small className="text-[8px] uppercase not-italic">Done</small></span>
+                                <div className="w-full sm:w-48 flex justify-between sm:justify-end gap-6 items-center border-t sm:border-0 border-slate-200/20 pt-3 sm:pt-0">
+                                    <div className="flex flex-col items-start sm:items-end">
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</span>
+                                        <span className="text-[10px] xl:text-[11px] font-black text-slate-500 italic">{row.completed}/{row.total} <small className="text-[8px] uppercase not-italic">Done</small></span>
                                     </div>
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Habits</span>
-                                        <span className="text-[11px] font-black text-orange-400 italic">{row.habitRate}%</span>
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Habits</span>
+                                        <span className="text-[10px] xl:text-[11px] font-black text-orange-500 italic">{row.habitRate}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -256,10 +353,10 @@ const Analytics = ({ analytics, isDark }) => {
                     })}
 
                     {historyRows.length === 0 && (
-                        <div className="py-24 text-center border border-dashed border-white/5 rounded-[40px]">
-                            <LayoutGrid size={40} className="text-slate-800 mx-auto mb-4 opacity-20" />
-                            <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.3em]">Operational data stream offline</p>
-                            <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mt-2 italic">Awaiting first successful command execution</p>
+                        <div className={`py-12 xl:py-24 text-center border border-dashed rounded-[30px] ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
+                            <LayoutGrid size={32} className="text-slate-400 mx-auto mb-4 opacity-50" />
+                            <p className="text-[10px] xl:text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">Operational data stream offline</p>
+                            <p className="text-[8px] xl:text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 italic">Awaiting first successful command execution</p>
                         </div>
                     )}
                 </div>

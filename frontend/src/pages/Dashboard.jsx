@@ -275,8 +275,8 @@ const Dashboard = () => {
             setIsModalOpen={setIsModalOpen}
             scrolled={scrolled}
           />
-          <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-8 md:py-12 min-h-screen">
-            <div className={`relative w-full rounded-[32px] md:rounded-[48px] border ${isDark ? 'border-indigo-500/20' : 'border-white/10'} bg-[#0a0a0c]/80 backdrop-blur-3xl p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-700`}>
+          <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 min-h-screen">
+            <div className={`relative w-full rounded-[24px] md:rounded-[32px] border ${isDark ? 'border-indigo-500/20' : 'border-white/10'} bg-[#0a0a0c]/80 backdrop-blur-3xl p-6 md:p-8 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-700`}>
               {/* Futuristic HUD Background Elements */}
               <div className="scanning-grid opacity-[0.03] pointer-events-none"></div>
               <div className="absolute top-0 left-0 w-40 h-[2px] bg-gradient-to-r from-indigo-500 to-transparent"></div>
@@ -295,7 +295,7 @@ const Dashboard = () => {
 
                 {/* ── Dashboard Welcome Banner ── */}
                 {activeTab === 'dashboard' && (
-                  <div className="relative p-12 md:p-16 rounded-[48px] bg-gradient-to-br from-indigo-600/20 via-blue-600/5 to-transparent border border-white/10 overflow-hidden group animate-precision-docking stagger-1 backdrop-blur-xl">
+                  <div className="relative p-8 md:p-10 rounded-[32px] bg-gradient-to-br from-indigo-600/20 via-blue-600/5 to-transparent border border-white/10 overflow-hidden group animate-precision-docking stagger-1 backdrop-blur-xl">
                     <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-20 pointer-events-none animate-swing filter blur-[2px]">
                       <Star size={160} className="text-yellow-400 fill-yellow-400/20" />
                     </div>
@@ -306,7 +306,7 @@ const Dashboard = () => {
                           <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
                           <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">System Active // Operator Entry</span>
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-[-0.04em] italic uppercase leading-tight">
+                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-[-0.04em] italic uppercase leading-tight">
                           Welcome back, <br />
                           <span className="text-indigo-400">{userStats.userName.split(' ')[0]}</span>
                         </h2>

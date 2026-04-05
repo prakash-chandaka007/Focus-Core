@@ -7,7 +7,9 @@ import {
   ArrowRight,
   ChevronLeft,
   Target,
-  Zap
+  Zap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Required for navigation
 import api from '../services/api'; // Corrected path based on your src structure
@@ -17,6 +19,7 @@ const Auth = () => {
   const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: '' });
   const navigate = useNavigate();
 
@@ -204,14 +207,22 @@ const Auth = () => {
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-indigo-500 transition-colors" size={18} />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••••••"
-                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-12 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
                     required={!isForgot}
                   />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)} 
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-400 transition-colors bg-transparent border-none cursor-pointer"
+                    tabIndex="-1"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
             </div>
