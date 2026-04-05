@@ -23,7 +23,7 @@ const NavIcon = ({ icon, label, isActive, onClick, isDark }) => (
                 : (isDark 
                     ? 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
                     : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 border-transparent')
-        } cursor-pointer backdrop-blur-md hidden sm:flex xl:flex`}
+        } cursor-pointer backdrop-blur-md hidden lg:flex`}
         title={label}
     >
         {isActive && <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-indigo-500/10' : 'from-indigo-500/5'} to-transparent`}></div>}
@@ -185,7 +185,7 @@ const Header = ({ activeTab, setActiveTab, userStats, setIsModalOpen, scrolled }
                 {/* Add task button */}
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className={`bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl text-[10px] font-black transition-all duration-300 border cursor-pointer flex items-center gap-1.5 md:gap-2 uppercase tracking-widest hover:-translate-y-0.5 active:scale-95 animate-precision-docking stagger-5 relative overflow-hidden group/btn ${scrolled ? 'px-3 md:px-4 py-1.5 md:py-2' : 'px-4 md:px-5 py-2 md:py-2.5'} ${
+                    className={`bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl text-[10px] font-black transition-all duration-300 border cursor-pointer flex items-center gap-1.5 md:gap-2 uppercase tracking-widest hover:-translate-y-0.5 active:scale-95 animate-precision-docking stagger-5 relative overflow-hidden group/btn ${scrolled ? 'px-2 md:px-4 py-1.5 md:py-2' : 'px-3 md:px-5 py-2 md:py-2.5'} ${
                         isDark 
                             ? 'hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] border-white/20' 
                             : 'hover:shadow-[0_10px_20px_rgba(79,70,229,0.3)] border-indigo-500'
@@ -193,7 +193,7 @@ const Header = ({ activeTab, setActiveTab, userStats, setIsModalOpen, scrolled }
                 >
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                     <Plus size={14} className="animate-pulse relative z-10" />
-                    <span className={`relative z-10 hidden sm:block`}>Initiate</span>
+                    <span className={`relative z-10 hidden md:block`}>Initiate</span>
                 </button>
             </div>
         </header>

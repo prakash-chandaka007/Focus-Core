@@ -14,6 +14,7 @@ import api from '../services/api';
 import Footer from '../components/dashboard/Footer';
 import FooterPromo from '../components/dashboard/FooterPromo';
 import { useTheme } from '../context/ThemeContext';
+import MobileNav from '../components/dashboard/MobileNav';
 
 const Dashboard = () => {
   const { isDark } = useTheme();
@@ -377,6 +378,12 @@ const Dashboard = () => {
           addTask={addTask}
           newTask={newTask}
           setNewTask={setNewTask}
+        />
+
+        <MobileNav 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isDark={isDark} 
         />
       </main>
     </div>

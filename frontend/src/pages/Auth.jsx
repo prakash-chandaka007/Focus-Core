@@ -161,7 +161,7 @@ const Auth = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="E.G. JOHN DOE"
-                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all uppercase tracking-wider"
+                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
                     required={!isLogin && !isForgot}
                   />
                 </div>
@@ -178,7 +178,7 @@ const Auth = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="OPERATOR@FOCUSCORE.IO"
-                  className={`w-full bg-black/40 border rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:ring-1 outline-none transition-all uppercase tracking-wider ${fieldErrors.email ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/5 focus:border-indigo-500/50 focus:ring-indigo-500/20'}`}
+                  className={`w-full bg-black/40 border rounded-xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-800 focus:ring-1 outline-none transition-all ${fieldErrors.email ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/5 focus:border-indigo-500/50 focus:ring-indigo-500/20'}`}
                   required
                 />
               </div>

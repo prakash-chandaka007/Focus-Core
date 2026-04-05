@@ -60,9 +60,9 @@ const DashboardOverview = ({ userStats, habits = [] }) => {
             <div className="xl:col-span-8 bg-white/[0.03] border border-white/10 rounded-[24px] md:rounded-[32px] p-6 lg:p-8 relative overflow-hidden group backdrop-blur-2xl animate-precision-docking stagger-1">
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full -mr-40 -mt-40"></div>
                 <h3 className="text-2xl lg:text-3xl font-black text-white tracking-tighter mb-8 italic uppercase relative z-10 animate-precision-docking stagger-2">Daily Completion</h3>
-                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative z-10">
-                    <div className="relative w-48 h-48 flex items-center justify-center">
-                        <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+                <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12 relative z-10">
+                    <div className="relative w-36 h-36 md:w-48 md:h-48 flex items-center justify-center">
+                        <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]" viewBox="0 0 224 224">
                             <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="14" fill="transparent" className="text-white/[0.04]" />
                             <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="14" fill="transparent" strokeDasharray={628} strokeDashoffset={628 - (628 * (userStats.dailyCompletion / 100))} strokeLinecap="round" className="text-indigo-500 transition-all duration-[1500ms] ease-out" />
                         </svg>

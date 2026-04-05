@@ -209,7 +209,7 @@ const Analytics = ({ analytics, isDark }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
                 
                 {/* Performance Index & Unified Metrics */}
-                <div className={`p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group flex flex-col`}>
+                <div className={`p-4 md:p-6 xl:p-8 rounded-[24px] md:rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden group flex flex-col`}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
                         <div>
                             <h3 className={`text-base xl:text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance Index</h3>
@@ -272,7 +272,7 @@ const Analytics = ({ analytics, isDark }) => {
                     </div>
 
                     {/* Chart */}
-                    <div className={`flex-1 p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden flex flex-col`}>
+                    <div className={`flex-1 p-4 md:p-6 xl:p-8 rounded-[24px] md:rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden flex flex-col`}>
                         <div className="mb-6 xl:mb-10">
                             <h3 className={`text-base xl:text-lg font-black italic uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Efficiency Engine</h3>
                             <p className="text-[9px] xl:text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Trajectory</p>
@@ -293,7 +293,7 @@ const Analytics = ({ analytics, isDark }) => {
             </div>
 
             {/* ── Operational History ── */}
-            <div className={`p-6 xl:p-8 rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden`}>
+            <div className={`p-4 md:p-6 xl:p-8 rounded-[24px] md:rounded-[30px] xl:rounded-[40px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-sm'} backdrop-blur-3xl relative overflow-hidden`}>
                 <div className="flex items-center justify-between mb-6 xl:mb-8">
                     <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/5 border-white/10 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}>
@@ -321,7 +321,7 @@ const Analytics = ({ analytics, isDark }) => {
                     {historyRows.map((row, i) => {
                         const isToday = i === 0;
                         return (
-                            <div key={row.day + i} className={`group flex flex-col sm:flex-row sm:items-center gap-4 xl:gap-6 p-4 rounded-3xl border transition-all duration-300 ${isToday ? (isDark ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-200') : (isDark ? 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5' : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-200')}`}>
+                            <div key={row.day + i} className={`group flex flex-col sm:flex-row sm:items-center gap-4 xl:gap-6 p-3 md:p-4 rounded-2xl md:rounded-3xl border transition-all duration-300 ${isToday ? (isDark ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-200') : (isDark ? 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5' : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-200')}`}>
                                 <div className="w-full sm:w-12 flex flex-row sm:flex-col items-center justify-between sm:justify-center">
                                     <span className={`text-[11px] xl:text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-500' : 'text-slate-500'}`}>{row.day}</span>
                                     {isToday && <span className="text-[8px] font-black text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">NOW</span>}

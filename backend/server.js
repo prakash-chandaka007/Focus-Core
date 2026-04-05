@@ -16,7 +16,11 @@ const app = express();
 
 // 3. Essential Middleware
 app.use(express.json());
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ 
+    origin: '*', 
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization']
+}));
 
 // Request Logger (Helpful for debugging)
 app.use((req, res, next) => {
