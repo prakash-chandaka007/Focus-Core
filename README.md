@@ -1,2 +1,2 @@
 # Focus-Core
-A TODO lish and Habit Tracker web application
+A TODO list and Habit Tracker web application
